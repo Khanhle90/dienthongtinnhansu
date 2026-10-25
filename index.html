@@ -1321,6 +1321,7 @@
     }
 
     async function uploadToImgBB(base64Data, fileName) {
+      if (!base64Data) return ""; // Nếu không có ảnh chụp mới thì bỏ qua, không gây lỗi
       const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
       const formData = new FormData();
       formData.append('key', IMGBB_API_KEY);
@@ -1451,8 +1452,15 @@
       });
 
       try {
-        const frontUrl = await uploadToImgBB(frontCroppedDataUrl, `CCCD_Front_${last4}`);
-        const backUrl = await uploadToImgBB(backCroppedDataUrl, `CCCD_Back_${last4}`);
+        let frontUrl = "";
+        let backUrl = "";
+        // Chỉ tải lên ImgBB khi có chụp/tải ảnh mới, nếu dùng lại PDF cũ thì bỏ qua
+        if (frontCroppedDataUrl) {
+          frontUrl = await uploadToImgBB(frontCroppedDataUrl, `CCCD_Front_${last4}`);
+        }
+        if (backCroppedDataUrl) {
+          backUrl = await uploadToImgBB(backCroppedDataUrl, `CCCD_Back_${last4}`);
+        }
 
         const payload = {
           hoTen: trimTrailingSpaces(document.getElementById('hoTen').value),
