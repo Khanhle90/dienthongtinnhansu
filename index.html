@@ -1169,35 +1169,39 @@
 
     // --- Ghép 2 ảnh vào PDF (CHỈ CÓ 2 ẢNH, HOÀN TOÀN KHÔNG CHÈN CHỮ) ---
     async function checkAndGeneratePdf() {
-      if (!frontCroppedDataUrl || !backCroppedDataUrl) return;
+      if (!frontCroppedDataUrl || !backCroppedDataUrl) return null;
 
       const badge = document.getElementById('pdfStatusBadge');
-      badge.className = "text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold";
-      badge.innerText = "Đang ghép PDF...";
+      if (badge) {
+        badge.className = "text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold";
+        badge.innerText = "Đang ghép PDF...";
+      }
 
       try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-        // Kích thước chuẩn tỉ lệ CCCD trên khổ A4 (rộng 150mm, cao 94.6mm)
         const cardWidth = 150;
         const cardHeight = 94.6;
-        const xPos = (210 - cardWidth) / 2; // Căn giữa khổ giấy A4 theo chiều ngang
+        const xPos = (210 - cardWidth) / 2;
 
-        // 1. Ảnh mặt trước (ở nửa trên trang giấy)
+        // Chỉ chứa 2 ảnh CCCD căn giữa khổ A4, sạch 100% không chèn thêm chữ
         doc.addImage(frontCroppedDataUrl, 'JPEG', xPos, 30, cardWidth, cardHeight);
-
-        // 2. Ảnh mặt sau (ở nửa dưới trang giấy)
         doc.addImage(backCroppedDataUrl, 'JPEG', xPos, 155, cardWidth, cardHeight);
 
         const pdfOutput = doc.output('datauristring');
         generatedPdfBase64 = pdfOutput.split(',')[1];
 
-        badge.className = "text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold";
-        badge.innerHTML = '<i class="fa-solid fa-check"></i> Đã ghép PDF sẵn sàng';
+        if (badge) {
+          badge.className = "text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold";
+          badge.innerHTML = '<i class="fa-solid fa-check"></i> Đã ghép PDF sẵn sàng';
+        }
+        return generatedPdfBase64;
       } catch (e) {
-        badge.className = "text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-full";
-        badge.innerText = "Lỗi ghép PDF";
+        if (badge) {
+          badge.className = "text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-full";
+          badge.innerText = "Lỗi ghép PDF";
+        }
+        return null;
       }
     }
 
@@ -1271,17 +1275,22 @@
         return;
       }
 
-      // 5. Kiểm tra bắt buộc có ảnh CCCD (nếu trên Drive chưa có file thì bắt buộc phải nạp ảnh)
+      // 5. Kiểm tra bắt buộc có ảnh CCCD nếu Drive chưa có
       const hasNewPhotos = Boolean(frontCroppedDataUrl && backCroppedDataUrl);
       if (!serverHasPdf && !hasNewPhotos) {
         Swal.fire({
           icon: 'warning',
           title: 'Thiếu ảnh chụp CCCD 2 mặt!',
-          text: 'Hồ sơ của bạn chưa có file PDF ảnh CCCD trên Google Drive. Vui lòng chụp hoặc thêm đầy đủ cả 2 mặt CCCD để tiếp tục!',
+          text: 'Hồ sơ của bạn chưa có file PDF trên Google Drive. Vui lòng chụp hoặc thêm đầy đủ cả 2 mặt CCCD để tiếp tục!',
           confirmButtonColor: '#2563eb'
         });
         document.getElementById('frontPreviewContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
+      }
+
+      // Đảm bảo PDF luôn được ghép thành công trước khi gửi
+      if (hasNewPhotos && !generatedPdfBase64) {
+        generatedPdfBase64 = await checkAndGeneratePdf();
       }
 
       // 6. Kiểm tra Vị trí công việc & các mục phát sinh của CTV
