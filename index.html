@@ -14,11 +14,8 @@
 
   <style>
     .landscape-guide-box {
-      border: 3px dashed #38bdf8;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
-    }
-    @media screen and (orientation: portrait) {
-      .rotate-phone-notice { display: flex !important; }
+      border: 2px dashed #38bdf8;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
     }
   </style>
 </head>
@@ -341,34 +338,38 @@
     </form>
   </main>
 
-  <!-- MODAL CHỤP CAMERA NGANG -->
+  <!-- MODAL CHỤP CAMERA: ĐỂ DỌC MÁY, CÓ CHỮ HƯỚNG DẪN, KHUNG CĂN CHUẨN CCCD -->
   <div id="cameraModal" class="fixed inset-0 bg-black z-50 hidden flex flex-col justify-between p-3 select-none">
-    <div class="text-center bg-amber-500 text-black font-semibold text-xs py-1.5 px-3 rounded-full mx-auto shadow flex items-center gap-2">
-      <i class="fa-solid fa-mobile-screen-button animate-bounce"></i>
-      <span>Hãy chụp như mẫu và quay ngang máy khi chụp</span>
+    <!-- Dòng chữ hướng dẫn nổi bật theo yêu cầu -->
+    <div class="text-center bg-amber-500 text-slate-900 font-bold text-xs py-2 px-3 rounded-lg mx-auto shadow flex items-center justify-center gap-1.5 z-20 max-w-md w-full">
+      <i class="fa-solid fa-circle-exclamation text-sm text-slate-900"></i>
+      <span>Chụp ngang máy và căn ảnh CCCD theo khung hình</span>
     </div>
-    <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2">
-      <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover"></video>
-      <div class="absolute w-[80vw] max-w-[500px] h-[50vw] max-h-[315px] rounded-xl landscape-guide-box pointer-events-none flex flex-col justify-between p-3 text-white text-opacity-80">
-        <div class="flex justify-between text-xs">
-          <span><i class="fa-solid fa-id-card"></i> Khung CCCD</span>
-          <span id="camSideIndicator" class="font-bold uppercase bg-blue-600 px-2 py-0.5 rounded">Mặt trước</span>
+
+    <!-- Khung hiển thị camera & Khung căn chỉnh nhỏ hơn màn hình một chút -->
+    <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2 bg-black">
+      <video id="cameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+      
+      <!-- Khung viền đứt căn chỉnh thẻ CCCD (rộng 90% màn hình, không che video) -->
+      <div class="absolute w-[90vw] max-w-[420px] aspect-[85.6/54] rounded-xl landscape-guide-box pointer-events-none flex flex-col justify-between p-3 text-white z-10">
+        <div class="flex justify-between items-center text-xs">
+          <span class="bg-black/60 px-2.5 py-1 rounded font-semibold"><i class="fa-solid fa-id-card"></i> Khung CCCD</span>
+          <span id="camSideIndicator" class="font-bold uppercase bg-blue-600 px-2.5 py-1 rounded">Mặt trước</span>
         </div>
-        <div class="text-center text-xs text-cyan-200">Đặt toàn bộ căn cước nằm trọn trong khung</div>
-      </div>
-      <div class="rotate-phone-notice hidden absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white text-center p-6 z-10">
-        <i class="fa-solid fa-arrows-rotate text-5xl text-amber-400 mb-3 animate-spin"></i>
-        <h3 class="text-lg font-bold">Hãy quay ngang điện thoại</h3>
-        <p class="text-sm text-slate-300 mt-1">Để chụp ảnh CCCD rõ nét và không bị cắt lẹm thông tin.</p>
+        <div class="text-center text-xs text-yellow-300 font-semibold bg-black/70 py-1.5 px-3 rounded self-center shadow">
+          Đặt toàn bộ căn cước nằm trọn trong khung
+        </div>
       </div>
     </div>
-    <div class="flex items-center justify-around pb-2">
-      <button type="button" onclick="closeCameraModal()" class="text-white text-sm px-4 py-2 bg-slate-800 rounded-lg">Hủy</button>
-      <button type="button" onclick="takeSnapshot()" class="w-16 h-16 bg-white border-4 border-blue-500 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
+
+    <!-- Thanh nút bấm điều khiển -->
+    <div class="flex items-center justify-around pb-2 z-20">
+      <button type="button" onclick="closeCameraModal()" class="text-white text-sm px-5 py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 rounded-xl transition">Hủy</button>
+      <button type="button" onclick="takeSnapshot()" class="w-16 h-16 bg-white border-4 border-blue-500 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
         <div class="w-12 h-12 bg-blue-600 rounded-full"></div>
       </button>
-      <button type="button" onclick="switchCamera()" class="text-white text-sm px-3 py-2 bg-slate-800 rounded-lg">
-        <i class="fa-solid fa-camera-rotate"></i>
+      <button type="button" onclick="switchCamera()" class="text-white text-sm p-3 bg-slate-800 hover:bg-slate-700 active:scale-95 rounded-xl transition">
+        <i class="fa-solid fa-camera-rotate text-lg"></i>
       </button>
     </div>
   </div>
@@ -1067,20 +1068,33 @@
       }
     }
 
+    // ================= XỬ LÝ CAMERA & CẮT ẢNH: TỰ ĐỘNG XOAY NGANG & BUNG KHUNG CROP =================
     async function startCameraCapture(side) {
       currentSide = side;
-      document.getElementById('camSideIndicator').innerText = (side === 'front') ? 'Mặt trước' : 'Mặt sau';
+      const indicator = document.getElementById('camSideIndicator');
+      if (indicator) indicator.innerText = (side === 'front') ? 'Mặt trước' : 'Mặt sau';
       document.getElementById('cameraModal').classList.remove('hidden');
 
       try {
-        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        if (cameraStream) {
+          cameraStream.getTracks().forEach(t => t.stop());
+          cameraStream = null;
+        }
         cameraStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: currentFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          video: {
+            facingMode: currentFacingMode,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
           audio: false
         });
-        document.getElementById('cameraVideo').srcObject = cameraStream;
+        const video = document.getElementById('cameraVideo');
+        video.srcObject = cameraStream;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('muted', '');
+        video.play().catch(e => console.log("Lỗi autoplay video:", e));
       } catch (err) {
-        Swal.fire('Lỗi máy ảnh', 'Không thể khởi động camera. Vui lòng cấp quyền!', 'error');
+        Swal.fire('Lỗi máy ảnh', 'Không thể khởi động camera. Vui lòng cấp quyền truy cập máy ảnh!', 'error');
         closeCameraModal();
       }
     }
@@ -1098,44 +1112,140 @@
       document.getElementById('cameraModal').classList.add('hidden');
     }
 
+    // 1. Chụp ảnh: Tự động chuyển góc xoay sang khổ ngang ngay khi chụp máy dọc
     function takeSnapshot() {
       const video = document.getElementById('cameraVideo');
+      if (!video || !video.videoWidth) {
+        Swal.fire('Chưa sẵn sàng', 'Camera đang khởi động, vui lòng thử lại sau 1 giây!', 'warning');
+        return;
+      }
+
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
       const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth || 1280;
-      canvas.height = video.videoHeight || 720;
-      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+      // Nếu cầm máy dọc (vh > vw), tự động xoay -90 độ sang khổ ngang chuẩn thẻ CCCD
+      if (vh > vw) {
+        canvas.width = vh;
+        canvas.height = vw;
+        const ctx = canvas.getContext('2d');
+        ctx.translate(0, vw);
+        ctx.rotate(-90 * Math.PI / 180);
+        ctx.drawImage(video, 0, 0, vw, vh);
+      } else {
+        canvas.width = vw;
+        canvas.height = vh;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, vw, vh);
+      }
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
       closeCameraModal();
       openCropModal(dataUrl);
     }
 
+    // Hàm bổ trợ: Tự động xoay sang ngang nếu tệp ảnh tải lên đang ở dạng ảnh dọc
+    function ensureLandscape(dataUrl, callback) {
+      const img = new Image();
+      img.onload = function() {
+        if (img.naturalHeight > img.naturalWidth) {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalHeight;
+          canvas.height = img.naturalWidth;
+          const ctx = canvas.getContext('2d');
+          ctx.translate(0, canvas.height);
+          ctx.rotate(-90 * Math.PI / 180);
+          ctx.drawImage(img, 0, 0);
+          callback(canvas.toDataURL('image/jpeg', 0.92));
+        } else {
+          callback(dataUrl);
+        }
+      };
+      img.onerror = function() {
+        callback(dataUrl);
+      };
+      img.src = dataUrl;
+    }
+
+    // 2. Tải tệp từ máy: Tự động phát hiện ảnh dọc để xoay ngang trước khi cắt
     function handleFileSelect(event, side) {
       currentSide = side;
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = (e) => openCropModal(e.target.result);
+      reader.onload = (e) => {
+        ensureLandscape(e.target.result, function(landscapeUrl) {
+          openCropModal(landscapeUrl);
+        });
+      };
       reader.readAsDataURL(file);
       event.target.value = "";
     }
 
+    // 3. Hàm tự căn chỉnh khung Crop mở rộng tối đa (96% kích thước ảnh hiển thị)
+    function fitCropBoxToCard() {
+      if (!cropper) return;
+      const canvasData = cropper.getCanvasData();
+      if (!canvasData || !canvasData.width || !canvasData.height) return;
+
+      const targetRatio = 85.6 / 54;
+      let w = canvasData.width * 0.96;
+      let h = w / targetRatio;
+
+      if (h > canvasData.height * 0.96) {
+        h = canvasData.height * 0.96;
+        w = h * targetRatio;
+      }
+
+      const left = canvasData.left + (canvasData.width - w) / 2;
+      const top = canvasData.top + (canvasData.height - h) / 2;
+
+      cropper.setCropBoxData({
+        left: Math.round(left),
+        top: Math.round(top),
+        width: Math.round(w),
+        height: Math.round(h)
+      });
+    }
+
+    function triggerFitCropBox() {
+      setTimeout(fitCropBoxToCard, 50);
+      setTimeout(fitCropBoxToCard, 150);
+    }
+
+    // 4. Mở modal cắt ảnh
     function openCropModal(imageSrc) {
       const modal = document.getElementById('cropModal');
       const image = document.getElementById('imageToCrop');
       image.src = imageSrc;
       modal.classList.remove('hidden');
 
-      if (cropper) cropper.destroy();
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+
       cropper = new Cropper(image, {
-        aspectRatio: 85.6 / 53.98,
+        aspectRatio: 85.6 / 54, // Tỉ lệ chuẩn CCCD
         viewMode: 1,
-        autoCropArea: 0.92,
-        responsive: true
+        autoCropArea: 0.96,
+        responsive: true,
+        background: false,
+        ready() {
+          const imgData = cropper.getImageData();
+          if (imgData.naturalHeight > imgData.naturalWidth) {
+            cropper.rotate(-90);
+          }
+          triggerFitCropBox();
+        }
       });
     }
 
+    // 5. Xoay ảnh trái/phải và lập tức bung to khung crop vừa khít thẻ
     function rotateCropImage(degree) {
-      if (cropper) cropper.rotate(degree);
+      if (!cropper) return;
+      cropper.rotate(degree);
+      triggerFitCropBox();
     }
 
     function closeCropModal() {
@@ -1146,9 +1256,14 @@
       document.getElementById('cropModal').classList.add('hidden');
     }
 
+    // 6. Hoàn tất cắt ảnh xuất ra độ phân giải chuẩn 1000x631px
     function applyCrop() {
       if (!cropper) return;
-      const canvas = cropper.getCroppedCanvas({ width: 900, height: 570, imageSmoothingQuality: 'medium' });
+      const canvas = cropper.getCroppedCanvas({
+        width: 1000,
+        height: 631,
+        imageSmoothingQuality: 'high'
+      });
       const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
       if (currentSide === 'front') {
