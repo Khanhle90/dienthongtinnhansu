@@ -338,31 +338,31 @@
     </form>
   </main>
 
-  <!-- MODAL CHỤP CAMERA: ĐỂ DỌC MÁY, CÓ CHỮ HƯỚNG DẪN, KHUNG CĂN CHUẨN CCCD -->
+  <!-- MODAL CHỤP CAMERA: GỢI Ý CẦM NGANG MÁY, KHUNG ĐỨNG 54x85.6 ĐỂ KHI XOAY NGANG MÁY THÌ KHUNG NẰM TRỌN MÀN HÌNH -->
   <div id="cameraModal" class="fixed inset-0 bg-black z-50 hidden flex flex-col justify-between p-3 select-none">
-    <!-- Dòng chữ hướng dẫn nổi bật theo yêu cầu -->
+    <!-- Dòng chữ nhắc nhở xoay ngang máy -->
     <div class="text-center bg-amber-500 text-slate-900 font-bold text-xs py-2 px-3 rounded-lg mx-auto shadow flex items-center justify-center gap-1.5 z-20 max-w-md w-full">
-      <i class="fa-solid fa-circle-exclamation text-sm text-slate-900"></i>
-      <span>Chụp ngang máy và căn ảnh CCCD theo khung hình</span>
+      <i class="fa-solid fa-rotate text-sm"></i>
+      <span>Cầm ngang điện thoại để chụp ảnh CCCD to và bao quát nhất</span>
     </div>
 
-    <!-- Khung hiển thị camera & Khung căn chỉnh nhỏ hơn màn hình một chút -->
+    <!-- Khung Camera & Khung nét đứt đứng (khi cầm ngang máy thì biến thành khung ngang bao trọn) -->
     <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2 bg-black">
       <video id="cameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
-      
-      <!-- Khung viền đứt căn chỉnh thẻ CCCD (rộng 90% màn hình, không che video) -->
-      <div class="absolute w-[90vw] max-w-[420px] aspect-[85.6/54] rounded-xl landscape-guide-box pointer-events-none flex flex-col justify-between p-3 text-white z-10">
+
+      <!-- Khung nét đứt gợi ý: tỷ lệ đứng 54/85.6, cao 68vh -->
+      <div class="absolute h-[68vh] max-h-[540px] max-w-[85vw] aspect-[54/85.6] rounded-xl landscape-guide-box pointer-events-none flex flex-col justify-between p-3 text-white z-10">
         <div class="flex justify-between items-center text-xs">
-          <span class="bg-black/60 px-2.5 py-1 rounded font-semibold"><i class="fa-solid fa-id-card"></i> Khung CCCD</span>
-          <span id="camSideIndicator" class="font-bold uppercase bg-blue-600 px-2.5 py-1 rounded">Mặt trước</span>
+          <span class="bg-black/60 px-2 py-0.5 rounded font-semibold"><i class="fa-solid fa-id-card"></i> Khung CCCD</span>
+          <span id="camSideIndicator" class="font-bold uppercase bg-blue-600 px-2 py-0.5 rounded">Mặt trước</span>
         </div>
-        <div class="text-center text-xs text-yellow-300 font-semibold bg-black/70 py-1.5 px-3 rounded self-center shadow">
-          Đặt toàn bộ căn cước nằm trọn trong khung
+        <div class="text-center text-xs text-yellow-300 font-semibold bg-black/70 py-1 px-2 rounded self-center shadow">
+          Căn trọn thẻ CCCD vào trong khung này
         </div>
       </div>
     </div>
 
-    <!-- Thanh nút bấm điều khiển -->
+    <!-- Thanh nút bấm: Nút chụp tròn màu xanh luôn sẵn sàng -->
     <div class="flex items-center justify-around pb-2 z-20">
       <button type="button" onclick="closeCameraModal()" class="text-white text-sm px-5 py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 rounded-xl transition">Hủy</button>
       <button type="button" onclick="takeSnapshot()" class="w-16 h-16 bg-white border-4 border-blue-500 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
@@ -1069,6 +1069,7 @@
     }
 
     // ================= XỬ LÝ CAMERA & CẮT ẢNH: TỰ ĐỘNG XOAY NGANG & BUNG KHUNG CROP =================
+    // ================= XỬ LÝ CAMERA & CẮT ẢNH =================
     async function startCameraCapture(side) {
       currentSide = side;
       const indicator = document.getElementById('camSideIndicator');
@@ -1092,7 +1093,7 @@
         video.srcObject = cameraStream;
         video.setAttribute('playsinline', '');
         video.setAttribute('muted', '');
-        video.play().catch(e => console.log("Lỗi autoplay video:", e));
+        video.play().catch(e => console.log("Lỗi play camera:", e));
       } catch (err) {
         Swal.fire('Lỗi máy ảnh', 'Không thể khởi động camera. Vui lòng cấp quyền truy cập máy ảnh!', 'error');
         closeCameraModal();
@@ -1112,7 +1113,7 @@
       document.getElementById('cameraModal').classList.add('hidden');
     }
 
-    // 1. Chụp ảnh: Tự động chuyển góc xoay sang khổ ngang ngay khi chụp máy dọc
+    // 1. Chụp ảnh: Tự động xoay ảnh -90 độ sang ngang ngay lập tức
     function takeSnapshot() {
       const video = document.getElementById('cameraVideo');
       if (!video || !video.videoWidth) {
@@ -1124,7 +1125,8 @@
       const vh = video.videoHeight;
       const canvas = document.createElement('canvas');
 
-      // Nếu cầm máy dọc (vh > vw), tự động xoay -90 độ sang khổ ngang chuẩn thẻ CCCD
+      // Khi bạn cầm ngang máy chụp (video dọc vh > vw):
+      // Xoay -90 độ trên canvas để ảnh CCCD nằm ngang ngay tức khắc
       if (vh > vw) {
         canvas.width = vh;
         canvas.height = vw;
@@ -1144,7 +1146,7 @@
       openCropModal(dataUrl);
     }
 
-    // Hàm bổ trợ: Tự động xoay sang ngang nếu tệp ảnh tải lên đang ở dạng ảnh dọc
+    // Hàm bổ trợ: Tự động xoay ngang nếu ảnh tải tệp từ máy lên đang ở dạng ảnh đứng (như Ảnh 3)
     function ensureLandscape(dataUrl, callback) {
       const img = new Image();
       img.onload = function() {
@@ -1167,7 +1169,7 @@
       img.src = dataUrl;
     }
 
-    // 2. Tải tệp từ máy: Tự động phát hiện ảnh dọc để xoay ngang trước khi cắt
+    // 2. Tải tệp từ máy lên
     function handleFileSelect(event, side) {
       currentSide = side;
       const file = event.target.files[0];
@@ -1182,38 +1184,7 @@
       event.target.value = "";
     }
 
-    // 3. Hàm tự căn chỉnh khung Crop mở rộng tối đa (96% kích thước ảnh hiển thị)
-    function fitCropBoxToCard() {
-      if (!cropper) return;
-      const canvasData = cropper.getCanvasData();
-      if (!canvasData || !canvasData.width || !canvasData.height) return;
-
-      const targetRatio = 85.6 / 54;
-      let w = canvasData.width * 0.96;
-      let h = w / targetRatio;
-
-      if (h > canvasData.height * 0.96) {
-        h = canvasData.height * 0.96;
-        w = h * targetRatio;
-      }
-
-      const left = canvasData.left + (canvasData.width - w) / 2;
-      const top = canvasData.top + (canvasData.height - h) / 2;
-
-      cropper.setCropBoxData({
-        left: Math.round(left),
-        top: Math.round(top),
-        width: Math.round(w),
-        height: Math.round(h)
-      });
-    }
-
-    function triggerFitCropBox() {
-      setTimeout(fitCropBoxToCard, 50);
-      setTimeout(fitCropBoxToCard, 150);
-    }
-
-    // 4. Mở modal cắt ảnh
+    // 3. Mở modal cắt ảnh: Khung crop tự động bao trọn màn hình ngang y hệt Ảnh 2
     function openCropModal(imageSrc) {
       const modal = document.getElementById('cropModal');
       const image = document.getElementById('imageToCrop');
@@ -1228,24 +1199,14 @@
       cropper = new Cropper(image, {
         aspectRatio: 85.6 / 54, // Tỉ lệ chuẩn CCCD
         viewMode: 1,
-        autoCropArea: 0.96,
+        autoCropArea: 0.98,     // Bao phủ tối đa 98% vừa khít thẻ
         responsive: true,
-        background: false,
-        ready() {
-          const imgData = cropper.getImageData();
-          if (imgData.naturalHeight > imgData.naturalWidth) {
-            cropper.rotate(-90);
-          }
-          triggerFitCropBox();
-        }
+        background: false
       });
     }
 
-    // 5. Xoay ảnh trái/phải và lập tức bung to khung crop vừa khít thẻ
     function rotateCropImage(degree) {
-      if (!cropper) return;
-      cropper.rotate(degree);
-      triggerFitCropBox();
+      if (cropper) cropper.rotate(degree);
     }
 
     function closeCropModal() {
@@ -1256,7 +1217,6 @@
       document.getElementById('cropModal').classList.add('hidden');
     }
 
-    // 6. Hoàn tất cắt ảnh xuất ra độ phân giải chuẩn 1000x631px
     function applyCrop() {
       if (!cropper) return;
       const canvas = cropper.getCroppedCanvas({
@@ -1282,7 +1242,7 @@
       checkAndGeneratePdf();
     }
 
-    // --- Ghép 2 ảnh vào PDF (CHỈ CÓ 2 ẢNH, HOÀN TOÀN KHÔNG CHÈN CHỮ) ---
+    // Ghép 2 ảnh vào PDF khổ A4
     async function checkAndGeneratePdf() {
       if (!frontCroppedDataUrl || !backCroppedDataUrl) return null;
 
@@ -1299,7 +1259,6 @@
         const cardHeight = 94.6;
         const xPos = (210 - cardWidth) / 2;
 
-        // Chỉ chứa 2 ảnh CCCD căn giữa khổ A4, sạch 100% không chèn thêm chữ
         doc.addImage(frontCroppedDataUrl, 'JPEG', xPos, 30, cardWidth, cardHeight);
         doc.addImage(backCroppedDataUrl, 'JPEG', xPos, 155, cardWidth, cardHeight);
 
@@ -1320,8 +1279,9 @@
       }
     }
 
+    // SỬA LỖI REPLACE NULL: Nếu không có ảnh chụp mới thì bỏ qua an toàn, không báo lỗi đỏ
     async function uploadToImgBB(base64Data, fileName) {
-      if (!base64Data) return ""; // Nếu không có ảnh chụp mới thì bỏ qua, không gây lỗi
+      if (!base64Data) return "";
       const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
       const formData = new FormData();
       formData.append('key', IMGBB_API_KEY);
