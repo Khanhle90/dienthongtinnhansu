@@ -911,7 +911,7 @@
             pdfBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Chưa có ảnh CCCD (Bắt buộc chụp/tải)';
           }
 
-          // 4. Popup thông báo tình trạng hồ sơ
+          // 4. Popup thông báo tình trạng hồ sơ từ sheet Data
           const missing = data.missingList || [];
           if (missing.length > 0) {
             Swal.fire({
@@ -919,22 +919,34 @@
               title: `Hồ sơ: ${data.hoTen} (${data.maSo})`,
               html: `
                 <div class="text-left text-sm space-y-2.5 text-slate-700">
-                  <p>Hệ thống đã nhận diện mã số và giữ lại các thông tin đã có.</p>
-                  <div class="p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-xs">
-                    <p class="font-bold flex items-center gap-1.5 mb-1 text-red-800">
-                      <i class="fa-solid fa-triangle-exclamation"></i> Hồ sơ của bạn đang THIẾU các mục sau:
-                    </p>
-                    <ul class="list-disc list-inside space-y-1 font-semibold text-red-800">
+                  <p>Hệ thống đã nhận diện mã số từ <strong>sheet Data</strong>.</p>
+                  
+                  ${!data.hasGioiTinh ? `
+                    <div class="p-2.5 bg-red-50 border border-red-300 rounded-lg text-red-700 text-xs font-semibold flex items-center gap-2">
+                      <i class="fa-solid fa-triangle-exclamation text-base"></i>
+                      <span>Cột O (Giới tính) chưa có dữ liệu - Vui lòng tích chọn Nam hoặc Nữ!</span>
+                    </div>
+                  ` : `
+                    <div class="p-2 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-800 text-xs font-medium flex items-center gap-2">
+                      <i class="fa-solid fa-circle-check text-base text-emerald-600"></i>
+                      <span>Giới tính đã có trong sheet Data: <b>${data.gioiTinh}</b></span>
+                    </div>
+                  `}
+
+                  <div class="p-3 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 text-xs">
+                    <p class="font-bold mb-1"><i class="fa-solid fa-circle-exclamation"></i> Danh sách các mục đang thiếu cần bổ sung:</p>
+                    <ul class="list-disc list-inside space-y-1 font-semibold text-red-700">
                       ${missing.map(m => `<li>${m}</li>`).join('')}
                     </ul>
                   </div>
-                  <p class="text-xs text-slate-500 italic">* Các mục đang thiếu đã được viền đỏ, bạn vui lòng hoàn thiện trước khi gửi mẫu.</p>
+                  <p class="text-xs text-slate-500 italic">* Các mục thiếu đã được viền đỏ, vui lòng hoàn tất để gửi dữ liệu vào sheet Data.</p>
                 </div>
               `,
               confirmButtonText: 'Bổ sung ngay',
               confirmButtonColor: '#2563eb'
             });
-          } else {
+          }
+           else {
             Swal.fire({
               icon: 'success',
               title: `Hồ sơ: ${data.hoTen} (${data.maSo})`,
