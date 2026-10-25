@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Khai Báo Thông Tin Nhân Sự & Quyết Toán</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    .landscape-guide-box {
+      border: 3px dashed #38bdf8;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+    }
+    @media screen and (orientation: portrait) {
+      .rotate-phone-notice { display: flex !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans pb-12">
+
+  <!-- Header Banner -->
+  <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-md">
+    <div class="max-w-3xl mx-auto px-4 py-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold uppercase tracking-wider">Thông Tin Thanh Toán Nhân Sự</h1>
+          <p class="text-xs md:text-sm text-blue-200 mt-1">Cập nhật hồ sơ, CCCD 2 mặt và quyết toán thù lao</p>
+        </div>
+        <button type="button" onclick="openLookupModal()" class="bg-blue-600/60 hover:bg-blue-500 border border-blue-300 text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-magnifying-glass"></i> Tra cứu mã
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 mt-4">
+    <form id="personnelForm" class="space-y-4">
+
+      <!-- 1. THÔNG TIN CÁ NHÂN -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+        <h2 class="text-base font-semibold text-blue-800 border-b pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-user-circle"></i> 1. Thông tin cá nhân
+        </h2>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-sm font-medium">Số điện thoại của bạn <span class="text-red-500">*</span></label>
+            <span id="phoneCounter" class="text-xs font-mono text-slate-400">0/10 số</span>
+          </div>
+          <div class="relative">
+            <input type="tel" id="soDienThoai" required maxlength="10" placeholder="Nhập đủ 10 số điện thoại (vd: 0389975487)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim font-mono text-base font-semibold">
+          </div>
+          <div id="phoneStatus" class="mt-1 min-h-[20px] text-xs">
+            <span class="text-slate-500 italic">Nhập đủ 10 số, hệ thống sẽ tự động kiểm tra và điền thông tin cũ nếu có.</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1">Họ và tên <span class="text-red-500">*</span></label>
+            <input type="text" id="hoTen" required placeholder="Ví dụ: Lê Duy Khánh" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-sm font-medium">Giới tính <span class="text-red-500">*</span></label>
+              <span id="gioiTinhBadge" class="hidden text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-200">Đang thiếu</span>
+            </div>
+            <div class="flex items-center gap-3 p-1 rounded-xl transition-all border border-transparent" id="gioiTinhBox">
+              <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-slate-50 flex-1 justify-center transition border-slate-300 bg-white">
+                <input type="radio" name="gioiTinh" value="Nam" class="w-4 h-4 text-blue-600 cursor-pointer">
+                <span class="text-sm font-medium">Nam</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-slate-50 flex-1 justify-center transition border-slate-300 bg-white">
+                <input type="radio" name="gioiTinh" value="Nữ" class="w-4 h-4 text-blue-600 cursor-pointer">
+                <span class="text-sm font-medium">Nữ</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-sm font-medium">Số CCCD <span class="text-red-500">*</span></label>
+              <span id="soCCCDBadge" class="hidden text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-200">Đang thiếu</span>
+            </div>
+            <input type="text" id="soCCCD" required placeholder="Nhập 12 số CCCD" maxlength="12" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim transition-all">
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-sm font-medium">Ngày tháng năm sinh <span class="text-red-500">*</span></label>
+              <span id="ngaySinhBadge" class="hidden text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-200">Nhập đủ ngày/tháng/năm</span>
+            </div>
+            <input type="text" id="ngaySinh" required placeholder="dd/mm/yyyy" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white transition-all">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">
+              Ngày cấp Căn cước công dân <span class="text-red-500">*</span>
+              <span id="ngayCapBadge" class="hidden text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded ml-1">Đang thiếu</span>
+            </label>
+            <input type="text" id="ngayCapCCCD" required placeholder="dd/mm/yyyy" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all bg-white">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">
+              Địa chỉ thường trú (theo CCCD) <span class="text-red-500">*</span>
+              <span id="diaChiBadge" class="hidden text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded ml-1">Đang thiếu</span>
+            </label>
+            <input type="text" id="diaChi" required placeholder="Xã/Phường, Quận/Huyện, Tỉnh/TP" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim transition-all">
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. VỊ TRÍ & CÔNG VIỆC -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+        <h2 class="text-base font-semibold text-blue-800 border-b pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-briefcase"></i> 2. Vị trí & Chức danh
+        </h2>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">Vị trí công việc của bạn <span class="text-red-500">*</span></label>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+            <label class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition">
+              <input type="radio" name="viTriOption" value="Hướng dẫn viên" checked onchange="handleRoleChange()" class="text-blue-600">
+              <span class="text-sm">Hướng dẫn viên</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition">
+              <input type="radio" name="viTriOption" value="Giáo viên" onchange="handleRoleChange()" class="text-blue-600">
+              <span class="text-sm">Giáo viên</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition">
+              <input type="radio" name="viTriOption" value="CTV" onchange="handleRoleChange()" class="text-blue-600">
+              <span class="text-sm">CTV</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition">
+              <input type="radio" name="viTriOption" value="Setup" onchange="handleRoleChange()" class="text-blue-600">
+              <span class="text-sm">Setup</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition">
+              <input type="radio" name="viTriOption" value="Khác" onchange="handleRoleChange()" class="text-blue-600">
+              <span class="text-sm">Khác</span>
+            </label>
+          </div>
+
+          <div id="customRoleBox" class="hidden mt-3">
+            <input type="text" id="customRoleInput" placeholder="Nhập vị trí / nghề nghiệp cụ thể..." class="w-full px-3 py-2 border border-blue-400 bg-blue-50/40 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
+          </div>
+
+          <!-- KHUNG DÀNH RIÊNG CHO CTV (TỰ ĐỘNG HIỆN KHI CHỌN CTV) -->
+          <div id="ctvExtraBox" class="hidden mt-4 pt-3 border-t border-dashed border-slate-300 space-y-3 bg-blue-50/50 p-3.5 rounded-xl border border-blue-200">
+            <div>
+              <label class="block text-sm font-semibold text-blue-900 mb-1.5">Bạn sử dụng phương tiện gì? <span class="text-red-500">*</span></label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition">
+                  <input type="radio" name="phuongTien" value="Xe máy" class="text-blue-600">
+                  <span class="text-xs sm:text-sm">Xe máy</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition">
+                  <input type="radio" name="phuongTien" value="Đi xe máy cùng bạn" class="text-blue-600">
+                  <span class="text-xs sm:text-sm">Đi xe máy cùng bạn</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition">
+                  <input type="radio" name="phuongTien" value="Xe đạp" class="text-blue-600">
+                  <span class="text-xs sm:text-sm">Xe đạp</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition">
+                  <input type="radio" name="phuongTien" value="Xe bus" class="text-blue-600">
+                  <span class="text-xs sm:text-sm">Xe bus</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-blue-900 mb-1">Phường nơi bạn đang ở hiện tại <span class="text-red-500">*</span></label>
+              <input type="text" id="noiO" placeholder="Ví dụ: Cầu Giấy" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-sm auto-trim">
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Mã số thẻ Hướng dẫn viên (nếu có)</label>
+          <input type="text" id="maTheHDV" placeholder="Nhập mã số thẻ nếu có" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
+        </div>
+      </section>
+
+      <!-- 3. TÀI KHOẢN NGÂN HÀNG -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+        <h2 class="text-base font-semibold text-blue-800 border-b pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-credit-card"></i> 3. Thông tin thanh toán ngân hàng
+        </h2>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Ngân hàng <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <input type="text" id="nganHang" list="danhSachNganHang" required placeholder="Gõ tìm kiếm (vd: Vietcombank, Techcombank, MB, BIDV...)" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white auto-trim">
+            <datalist id="danhSachNganHang">
+              <option value="TMCP Á Châu (ACB)"></option>
+              <option value="Nông nghiệp và Phát triển Nông thôn Việt Nam (Agribank)"></option>
+              <option value="TNHH MTV ANZ Việt Nam (ANZ Bank)"></option>
+              <option value="TMCP An Bình (ABBANK)"></option>
+              <option value="TMCP Bắc Á (Bac A Bank)"></option>
+              <option value="TMCP Bản Việt (BVBank)"></option>
+              <option value="TMCP Bảo Việt (BaoViet Bank)"></option>
+              <option value="TMCP Đầu tư và Phát triển Việt Nam (BIDV)"></option>
+              <option value="Đầu tư và Phát triển Campuchia (BIDC) - Chi nhánh Hà Nội"></option>
+              <option value="Đầu tư và Phát triển Campuchia (BIDC) - Chi nhánh TP. Hồ Chí Minh"></option>
+              <option value="BNK Busan - Chi nhánh TP. Hồ Chí Minh"></option>
+              <option value="Chính sách Xã hội (VBSP)"></option>
+              <option value="TNHH MTV CIMB Việt Nam (CIMB Bank)"></option>
+              <option value="TMCP Công Thương Việt Nam (VietinBank)"></option>
+              <option value="Công thương Trung Quốc (ICBC) - Chi nhánh Hà Nội"></option>
+              <option value="CTBC Bank (China Trust Commercial Bank) - Chi nhánh TP. Hồ Chí Minh"></option>
+              <option value="TMCP Đại Chúng Việt Nam (PVcomBank)"></option>
+              <option value="TMCP Dầu Khí Toàn Cầu (GPBank)"></option>
+              <option value="TMCP Đông Nam Á (SeABank)"></option>
+              <option value="TMCP Hàng Hải Việt Nam (MSB)"></option>
+              <option value="Hợp tác xã Việt Nam (Co-opBank)"></option>
+              <option value="TNHH MTV Hong Leong Việt Nam (Hong Leong Bank)"></option>
+              <option value="TNHH MTV HSBC (Việt Nam)"></option>
+              <option value="iM Bank (DGB Bank) - Chi nhánh TP. Hồ Chí Minh"></option>
+              <option value="TNHH Indovina (IVB)"></option>
+              <option value="Industrial Bank of Korea (IBK) - Chi nhánh Hà Nội"></option>
+              <option value="Industrial Bank of Korea (IBK) - Chi nhánh TP. Hồ Chí Minh"></option>
+              <option value="Kasikornbank Public Company Limited (KBank) - Chi nhánh TP. Hồ Chí Minh"></option>
+              <option value="TMCP Kiên Long (Kienlongbank)"></option>
+              <option value="TMCP Kỹ Thương Việt Nam (Techcombank)"></option>
+              <option value="Liên doanh Việt - Nga (VRB)"></option>
+              <option value="TMCP Lộc Phát Việt Nam (LPBank)"></option>
+              <option value="Malayan Banking Berhad (Maybank) - Chi nhánh Hà Nội"></option>
+              <option value="Malayan Banking Berhad (Maybank) - Chi nhánh TP. Hồ Chí Minh"></option>
+              <option value="TMCP Nam Á (Nam A Bank)"></option>
+              <option value="TMCP Ngoại Thương Việt Nam (Vietcombank)"></option>
+              <option value="Oversea-Chinese Banking Corporation (OCBC) - Chi nhánh TP. Hồ Chí Minh"></option>
+              <option value="Phát triển Việt Nam (VDB)"></option>
+              <option value="TMCP Phát triển TP. Hồ Chí Minh (HDBank)"></option>
+              <option value="TMCP Phương Đông (OCB)"></option>
+              <option value="TMCP Quân đội (MB)"></option>
+              <option value="TMCP Quốc Dân (NCB)"></option>
+              <option value="TMCP Quốc tế Việt Nam (VIB)"></option>
+              <option value="TMCP Sài Gòn (SCB)"></option>
+              <option value="TMCP Sài Gòn - Hà Nội (SHB)"></option>
+              <option value="TMCP Sài Gòn Công Thương (Saigonbank)"></option>
+              <option value="TMCP Sài Gòn Thương Tín (Sacombank)"></option>
+              <option value="TNHH MTV Shinhan Việt Nam (Shinhan Bank)"></option>
+              <option value="TNHH MTV Standard Chartered (Việt Nam)"></option>
+              <option value="TMCP Thịnh vượng và Phát triển (PGBank)"></option>
+              <option value="TMCP Tiên Phong (TPBank)"></option>
+              <option value="TNHH MTV United Overseas Bank (Việt Nam) (UOB)"></option>
+              <option value="VCB Digibank (Vietcombank)"></option>
+              <option value="TMCP Việt Á (VietABank)"></option>
+              <option value="TNHH MTV Việt Nam Hiện Đại (MBV)"></option>
+              <option value="TMCP Việt Nam Thịnh Vượng (VPBank)"></option>
+              <option value="TMCP Việt Nam Thương Tín (Vietbank)"></option>
+              <option value="TNHH MTV Vikki (Vikki Bank)"></option>
+              <option value="TNHH MTV Woori Việt Nam (Woori Bank)"></option>
+              <option value="TMCP Xuất Nhập Khẩu Việt Nam (Eximbank)"></option>
+              <option value="Số Cake by VPBank"></option>
+              <option value="Số Liobank by OCB"></option>
+              <option value="Số Timo by BVBank"></option>
+              <option value="Số Ubank by VPBank"></option>
+              <option value="Số Vikki (hợp tác cùng HDBank)"></option>
+              <option value="Tổng Công ty Dịch vụ số Viettel (Viettel Money)"></option>
+              <option value="Trung tâm Dịch vụ Tài chính số VNPT (VNPT Money)"></option>
+              <option value="Ứng dụng số Umee by Kienlongbank"></option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Số tài khoản <span class="text-red-500">*</span></label>
+            <input type="text" id="soTaiKhoan" required placeholder="Nhập số tài khoản gốc" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
+            <p class="text-[11px] text-amber-700 mt-1">Lưu ý khi STK là SĐT: ABA chuyển theo lô, nên bắt buộc dùng số tài khoản gốc (đặc biệt BIDV, VietinBank). nếu số tài khoản của bạn là SĐT, hãy thử tự kiểm tra đặt lệnh chuyển tiền vào tài khoản của bạn, nếu vẫn hiện SĐT thì đó là số TK gốc, còn nếu hiện số khác cùng tên tài khoản thì vui lòng nhập số TK gốc vừa hiện lên</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Chủ tài khoản (Không dấu) <span class="text-red-500">*</span></label>
+            <input type="text" id="chuTaiKhoan" required placeholder="VIET HOA KHONG DAU" class="w-full px-3 py-2 border rounded-lg uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. TẢI ẢNH CCCD 2 MẶT -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+        <h2 class="text-base font-semibold text-blue-800 border-b pb-2 flex items-center justify-between">
+          <span class="flex items-center gap-2"><i class="fa-solid fa-id-card"></i> 4. Ảnh CCCD 2 mặt (Chụp ngang / Cắt chuẩn)</span>
+          <span id="pdfStatusBadge" class="text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full font-normal">Chưa tạo PDF</span>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="border rounded-xl p-3 bg-slate-50 text-center">
+            <p class="font-medium text-sm text-slate-700 mb-2">1. Mặt trước CCCD <span class="text-red-500">*</span></p>
+            <div id="frontPreviewContainer" class="h-40 bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden mb-3 relative">
+              <span id="frontPlaceholder" class="text-xs text-slate-400 flex flex-col items-center gap-1">
+                <i class="fa-regular fa-image text-2xl"></i> Chưa có ảnh mặt trước
+              </span>
+              <img id="frontPreview" class="hidden w-full h-full object-contain">
+            </div>
+            <div class="flex gap-2">
+              <button type="button" onclick="startCameraCapture('front')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition">
+                <i class="fa-solid fa-camera"></i> Chụp ảnh
+              </button>
+              <label class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition">
+                <i class="fa-solid fa-folder-open"></i> Thêm tệp
+                <input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'front')">
+              </label>
+            </div>
+          </div>
+
+          <div class="border rounded-xl p-3 bg-slate-50 text-center">
+            <p class="font-medium text-sm text-slate-700 mb-2">2. Mặt sau CCCD <span class="text-red-500">*</span></p>
+            <div id="backPreviewContainer" class="h-40 bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden mb-3 relative">
+              <span id="backPlaceholder" class="text-xs text-slate-400 flex flex-col items-center gap-1">
+                <i class="fa-regular fa-image text-2xl"></i> Chưa có ảnh mặt sau
+              </span>
+              <img id="backPreview" class="hidden w-full h-full object-contain">
+            </div>
+            <div class="flex gap-2">
+              <button type="button" onclick="startCameraCapture('back')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition">
+                <i class="fa-solid fa-camera"></i> Chụp ảnh
+              </button>
+              <label class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition">
+                <i class="fa-solid fa-folder-open"></i> Thêm tệp
+                <input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'back')">
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="pt-2">
+        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-base">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Lưu thông tin nhân sự
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <!-- MODAL CHỤP CAMERA NGANG -->
+  <div id="cameraModal" class="fixed inset-0 bg-black z-50 hidden flex flex-col justify-between p-3 select-none">
+    <div class="text-center bg-amber-500 text-black font-semibold text-xs py-1.5 px-3 rounded-full mx-auto shadow flex items-center gap-2">
+      <i class="fa-solid fa-mobile-screen-button animate-bounce"></i>
+      <span>Hãy chụp như mẫu và quay ngang máy khi chụp</span>
+    </div>
+    <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2">
+      <video id="cameraVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+      <div class="absolute w-[80vw] max-w-[500px] h-[50vw] max-h-[315px] rounded-xl landscape-guide-box pointer-events-none flex flex-col justify-between p-3 text-white text-opacity-80">
+        <div class="flex justify-between text-xs">
+          <span><i class="fa-solid fa-id-card"></i> Khung CCCD</span>
+          <span id="camSideIndicator" class="font-bold uppercase bg-blue-600 px-2 py-0.5 rounded">Mặt trước</span>
+        </div>
+        <div class="text-center text-xs text-cyan-200">Đặt toàn bộ căn cước nằm trọn trong khung</div>
+      </div>
+      <div class="rotate-phone-notice hidden absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white text-center p-6 z-10">
+        <i class="fa-solid fa-arrows-rotate text-5xl text-amber-400 mb-3 animate-spin"></i>
+        <h3 class="text-lg font-bold">Hãy quay ngang điện thoại</h3>
+        <p class="text-sm text-slate-300 mt-1">Để chụp ảnh CCCD rõ nét và không bị cắt lẹm thông tin.</p>
+      </div>
+    </div>
+    <div class="flex items-center justify-around pb-2">
+      <button type="button" onclick="closeCameraModal()" class="text-white text-sm px-4 py-2 bg-slate-800 rounded-lg">Hủy</button>
+      <button type="button" onclick="takeSnapshot()" class="w-16 h-16 bg-white border-4 border-blue-500 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
+        <div class="w-12 h-12 bg-blue-600 rounded-full"></div>
+      </button>
+      <button type="button" onclick="switchCamera()" class="text-white text-sm px-3 py-2 bg-slate-800 rounded-lg">
+        <i class="fa-solid fa-camera-rotate"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL CROP ẢNH (CÓ 2 NÚT XOAY TRÁI & PHẢI) -->
+  <div id="cropModal" class="fixed inset-0 bg-black/90 z-50 hidden flex flex-col justify-between p-3 select-none">
+    <div class="text-white text-sm font-medium flex items-center justify-between pb-2 border-b border-slate-700">
+      <span><i class="fa-solid fa-crop-simple"></i> Căn chỉnh & Cắt góc ảnh CCCD</span>
+      <span class="text-xs text-blue-400">Tỉ lệ chuẩn 85.6 x 54</span>
+    </div>
+    <div class="relative flex-1 max-h-[75vh] flex items-center justify-center overflow-hidden my-2">
+      <img id="imageToCrop" class="max-w-full max-h-full">
+    </div>
+    <div class="flex items-center gap-2">
+      <!-- Nút xoay ngược chiều kim đồng hồ 90 độ -->
+      <button type="button" onclick="rotateCropImage(-90)" class="bg-slate-700 hover:bg-slate-600 active:scale-95 text-white text-xs px-3 py-2.5 rounded-lg flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-rotate-left"></i> Xoay trái
+      </button>
+      <!-- Nút xoay theo chiều kim đồng hồ 90 độ -->
+      <button type="button" onclick="rotateCropImage(90)" class="bg-slate-700 hover:bg-slate-600 active:scale-95 text-white text-xs px-3 py-2.5 rounded-lg flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-rotate-right"></i> Xoay phải
+      </button>
+      <!-- Nút Hủy -->
+      <button type="button" onclick="closeCropModal()" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white text-sm py-2.5 rounded-lg transition">Hủy</button>
+      <!-- Nút Cắt xong -->
+      <button type="button" onclick="applyCrop()" class="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold text-sm py-2.5 rounded-lg shadow transition flex items-center justify-center gap-1.5">
+        <i class="fa-solid fa-check"></i> Xong
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ================= CẤU HÌNH HỆ THỐNG =================
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKM8cbF6wSqQ1WWKkLTRi2MdlJOlIkEQzvzq0j4YAXX_6iO0jN1eRSysRLI0HnkZHP5A/exec";
+    const IMGBB_API_KEY = "9b4a10db15d694a88f3aa0d1ffbc0669";
+
+    /// BỘ ĐIỀU KHIỂN NHẬP NGÀY THÁNG: NGÀY (1-2 số) -> ẤN SANG -> THÁNG (max 12) -> ẤN SANG -> NĂM
+    // BỘ MẶT NẠ HIỆN SẴN DẤU GẠCH: __/__/____ (2 SỐ NGÀY / 2 SỐ THÁNG / 4 SỐ NĂM)
+    function setupDateInputMask(selector) {
+      const MASK_EMPTY = '__/__/____';
+
+      document.querySelectorAll(selector).forEach(el => {
+        el.setAttribute('placeholder', '__/__/____');
+        el.setAttribute('maxlength', '10');
+
+        // 1. Khi click / focus vào ô: hiện sẵn ngay "__/__/____" nếu ô đang trống
+        el.addEventListener('focus', function() {
+          if (!this.value || this.value.trim() === '') {
+            this.value = MASK_EMPTY;
+            this.setSelectionRange(0, 0);
+          } else {
+            const firstBlank = this.value.indexOf('_');
+            if (firstBlank !== -1) {
+              setTimeout(() => this.setSelectionRange(firstBlank, firstBlank), 10);
+            }
+          }
+        });
+
+        el.addEventListener('click', function() {
+          if (this.value === MASK_EMPTY) {
+            this.setSelectionRange(0, 0);
+          }
+        });
+
+        // 2. Rời chuột ra ngoài: nếu chưa điền gì thì trả về rỗng để không bị vướng
+        el.addEventListener('blur', function() {
+          if (this.value === MASK_EMPTY) {
+            this.value = '';
+          }
+        });
+
+        // 3. Xử lý gõ số, phím sang phải (->), phím "/" và xóa lùi (Backspace)
+        el.addEventListener('keydown', function(e) {
+          const key = e.key;
+          let val = this.value;
+
+          if (!val || val.length !== 10) {
+            val = MASK_EMPTY;
+            this.value = val;
+          }
+
+          let start = this.selectionStart;
+
+          // Phím MŨI TÊN SANG PHẢI (ArrowRight) hoặc PHÍM GẠCH CHÉO (/)
+          if (key === 'ArrowRight' || key === '/') {
+            e.preventDefault();
+            let arr = val.split('');
+
+            // Đang ở phần NGÀY (vị trí 0 hoặc 1)
+            if (start <= 2) {
+              if (arr[0] !== '_' && arr[1] === '_') {
+                arr[1] = arr[0]; arr[0] = '0'; // Gõ 1 số (vd '2_') ấn sang -> tự thành '02'
+              } else if (arr[0] === '_' && arr[1] === '_') {
+                arr[0] = '0'; arr[1] = '1';
+              }
+              this.value = arr.join('');
+              this.setSelectionRange(3, 3); // Nhảy sang vị trí Tháng
+              return;
+            }
+
+            // Đang ở phần THÁNG (vị trí 3 hoặc 4)
+            if (start >= 3 && start <= 5) {
+              if (arr[3] !== '_' && arr[4] === '_') {
+                let m = parseInt(arr[3], 10);
+                if (m > 12) m = 12;
+                arr[3] = '0'; arr[4] = '' + m; // Gõ 1 số (vd '6_') ấn sang -> tự thành '06'
+              } else if (arr[3] === '_' && arr[4] === '_') {
+                arr[3] = '0'; arr[4] = '1';
+              }
+              this.value = arr.join('');
+              this.setSelectionRange(6, 6); // Nhảy sang vị trí Năm
+              return;
+            }
+            return;
+          }
+
+          // Phím Backspace: xóa lùi và lùi qua dấu "/"
+          if (key === 'Backspace') {
+            e.preventDefault();
+            let arr = val.split('');
+            let pos = start;
+
+            if (pos === 3) pos = 2;
+            if (pos === 6) pos = 5;
+
+            let delPos = pos - 1;
+            if (delPos === 2 || delPos === 5) delPos--;
+
+            if (delPos >= 0) {
+              arr[delPos] = '_';
+              this.value = arr.join('');
+              this.setSelectionRange(delPos, delPos);
+            }
+            return;
+          }
+
+          // Phím số từ 0 đến 9
+          if (/^[0-9]$/.test(key)) {
+            e.preventDefault();
+            let arr = val.split('');
+            let pos = start;
+
+            if (pos === 2) pos = 3;
+            if (pos === 5) pos = 6;
+            if (pos >= 10) return;
+
+            // Xử lý thông minh phần NGÀY
+            if (pos === 0) {
+              let num = parseInt(key, 10);
+              if (num >= 4) { // Gõ 4-9 tự chuyển thành 04/-09/ và nhảy sang tháng
+                arr[0] = '0'; arr[1] = key;
+                this.value = arr.join('');
+                this.setSelectionRange(3, 3);
+                return;
+              } else {
+                arr[0] = key;
+                this.value = arr.join('');
+                this.setSelectionRange(1, 1);
+                return;
+              }
+            }
+
+            if (pos === 1) { // Gõ xong số ngày thứ 2 -> tự nhảy sang tháng
+              let dayNum = parseInt(arr[0] + key, 10);
+              if (dayNum > 31) dayNum = 31;
+              if (dayNum < 1) dayNum = 1;
+              let dayStr = dayNum < 10 ? '0' + dayNum : '' + dayNum;
+              arr[0] = dayStr[0]; arr[1] = dayStr[1];
+              this.value = arr.join('');
+              this.setSelectionRange(3, 3);
+              return;
+            }
+
+            // Xử lý thông minh phần THÁNG
+            if (pos === 3) {
+              let num = parseInt(key, 10);
+              if (num >= 2) { // Gõ 2-9 tự chuyển thành 02/-09/ và nhảy sang năm
+                arr[3] = '0'; arr[4] = key;
+                this.value = arr.join('');
+                this.setSelectionRange(6, 6);
+                return;
+              } else {
+                arr[3] = key;
+                this.value = arr.join('');
+                this.setSelectionRange(4, 4);
+                return;
+              }
+            }
+
+            if (pos === 4) { // Gõ xong số tháng thứ 2 -> khóa max 12 và tự sang năm
+              let mNum = parseInt(arr[3] + key, 10);
+              if (mNum > 12) mNum = 12;
+              if (mNum < 1) mNum = 1;
+              let mStr = mNum < 10 ? '0' + mNum : '' + mNum;
+              arr[3] = mStr[0]; arr[4] = mStr[1];
+              this.value = arr.join('');
+              this.setSelectionRange(6, 6);
+              return;
+            }
+
+            // Xử lý phần NĂM
+            if (pos >= 6 && pos <= 9) {
+              arr[pos] = key;
+              this.value = arr.join('');
+              this.setSelectionRange(pos + 1, pos + 1);
+              return;
+            }
+          }
+        });
+      });
+    }
+
+    // Kích hoạt mặt nạ cho cả Ngày sinh và Ngày cấp CCCD
+    setupDateInputMask('#ngaySinh, #ngayCapCCCD');
+
+    // Kích hoạt cho cả 2 ô Ngày sinh và Ngày cấp CCCD
+    setupDateInputMask('#ngaySinh, #ngayCapCCCD');
+
+    // Tự động chèn dấu "/" khi gõ số (gõ 21062021 sẽ tự tách thành 21/06/2021)
+    ['#ngaySinh', '#ngayCapCCCD'].forEach(id => {
+      const el = document.querySelector(id);
+      if (el) {
+        el.addEventListener('input', function(e) {
+          if (e.inputType === 'deleteContentBackward') return;
+          let v = this.value.replace(/\D/g, '').slice(0, 8);
+          let res = '';
+          if (v.length > 0) res = v.slice(0, 2);
+          if (v.length >= 3) res += '/' + v.slice(2, 4);
+          if (v.length >= 5) res += '/' + v.slice(4, 8);
+          this.value = res;
+        });
+      }
+    });
+// BỘ ĐIỀU KHIỂN: VIẾT XONG TỰ HIỆN DẤU "/" - ẤN SANG HOẶC VIẾT TIẾP ĐỂ CHUYỂN
+    function setupDateInputMask(selector) {
+      document.querySelectorAll(selector).forEach(el => {
+        el.setAttribute('placeholder', 'dd/mm/yyyy');
+        el.setAttribute('maxlength', '10');
+
+        // 1. Xử lý khi ấn phím Mũi tên sang phải (ArrowRight) hoặc phím gạch chéo (/)
+        el.addEventListener('keydown', function(e) {
+          const key = e.key;
+          let val = this.value;
+          const start = this.selectionStart;
+
+          // Khi ấn phím MŨI TÊN SANG PHẢI hoặc PHÍM "/"
+          if (key === 'ArrowRight' || key === '/') {
+            const parts = val.split('/');
+            
+            // Đang ở phần NGÀY: tự đệm số 0 nếu mới viết 1 số, hiện dấu "/" và nhảy sang Tháng
+            if (parts.length === 1 || (parts.length > 1 && start <= parts[0].length)) {
+              let day = parts[0].replace(/\D/g, '');
+              if (day.length > 0) {
+                e.preventDefault();
+                let dNum = parseInt(day, 10);
+                if (dNum > 31) dNum = 31;
+                if (dNum < 1) dNum = 1;
+                day = dNum < 10 ? '0' + dNum : '' + dNum;
+                const rest = parts.slice(1).join('/');
+                this.value = day + '/' + rest;
+                this.setSelectionRange(3, 3); // Chuyển con trỏ sang viết Tháng
+                return;
+              }
+            }
+            
+            // Đang ở phần THÁNG: tự đệm số 0 nếu mới viết 1 số, hiện dấu "/" và nhảy sang Năm
+            if (parts.length >= 2 && start > parts[0].length && start <= (parts[0].length + 1 + parts[1].length)) {
+              let month = parts[1].replace(/\D/g, '');
+              if (month.length > 0) {
+                e.preventDefault();
+                let mNum = parseInt(month, 10);
+                if (mNum > 12) mNum = 12; // Tháng tối đa đến 12
+                if (mNum < 1) mNum = 1;
+                month = mNum < 10 ? '0' + mNum : '' + mNum;
+                const year = parts[2] || '';
+                this.value = parts[0] + '/' + month + '/' + year;
+                this.setSelectionRange(6, 6); // Chuyển con trỏ sang viết Năm
+                return;
+              }
+            }
+          }
+
+          // Xóa lùi bằng Backspace không bị kẹt ở dấu "/"
+          if (key === 'Backspace') {
+            if (start === 3 && val[2] === '/') {
+              e.preventDefault();
+              this.value = val.slice(0, 1) + val.slice(3);
+              this.setSelectionRange(1, 1);
+              return;
+            }
+            if (start === 6 && val[5] === '/') {
+              e.preventDefault();
+              this.value = val.slice(0, 4) + val.slice(6);
+              this.setSelectionRange(4, 4);
+              return;
+            }
+          }
+        });
+
+        // 2. Tự động hiện dấu "/" ngay khi viết xong ngày hoặc tháng
+        el.addEventListener('input', function(e) {
+          if (e.inputType === 'deleteContentBackward') return;
+          
+          let val = this.value;
+          const parts = val.split('/');
+
+          // Đang nhập NGÀY
+          if (parts.length === 1) {
+            let d = parts[0].replace(/\D/g, '');
+            // Nếu gõ số từ 4 trở lên (ngày chỉ từ 01-31) -> tự hiện 04/ đến 09/ và nhảy sang tháng
+            if (d.length === 1 && parseInt(d, 10) >= 4) {
+              this.value = '0' + d + '/';
+            } else if (d.length >= 2) {
+              // Viết xong 2 số ngày -> tự hiện dấu "/" ngăn cách và sẵn sàng viết tháng
+              let dNum = parseInt(d.slice(0, 2), 10);
+              if (dNum > 31) dNum = 31;
+              if (dNum < 1) dNum = 1;
+              this.value = (dNum < 10 ? '0' + dNum : dNum) + '/';
+            }
+            return;
+          }
+
+          // Đang nhập THÁNG
+          if (parts.length === 2) {
+            let day = parts[0].replace(/\D/g, '').slice(0, 2);
+            let m = parts[1].replace(/\D/g, '');
+            // Nếu gõ số từ 2 trở lên (tháng chỉ từ 01-12) -> tự hiện 02/ đến 09/ và nhảy sang năm
+            if (m.length === 1 && parseInt(m, 10) >= 2) {
+              this.value = day + '/0' + m + '/';
+            } else if (m.length >= 2) {
+              // Viết xong 2 số tháng -> tự hiện dấu "/" ngăn cách và sẵn sàng viết năm
+              let mNum = parseInt(m.slice(0, 2), 10);
+              if (mNum > 12) mNum = 12; // Khóa tháng tối đa là 12
+              if (mNum < 1) mNum = 1;
+              this.value = day + '/' + (mNum < 10 ? '0' + mNum : mNum) + '/';
+            }
+            return;
+          }
+
+          // Đang nhập NĂM
+          if (parts.length >= 3) {
+            let day = parts[0].replace(/\D/g, '').slice(0, 2);
+            let month = parts[1].replace(/\D/g, '').slice(0, 2);
+            let year = parts[2].replace(/\D/g, '').slice(0, 4);
+            if (parseInt(month, 10) > 12) month = '12';
+            this.value = day + '/' + month + '/' + year;
+          }
+        });
+
+        // Chuẩn hóa định dạng khi rời khỏi ô
+        el.addEventListener('blur', function() {
+          const parts = this.value.trim().split('/');
+          if (parts.length >= 2 && parts[0] && parts[1]) {
+            let d = parseInt(parts[0], 10) || 1;
+            let m = parseInt(parts[1], 10) || 1;
+            let y = parts[2] ? parts[2].replace(/\D/g, '') : '';
+            if (d > 31) d = 31;
+            if (d < 1) d = 1;
+            if (m > 12) m = 12;
+            if (m < 1) m = 1;
+            if (y.length > 0) {
+              this.value = (d < 10 ? '0' + d : d) + '/' + (m < 10 ? '0' + m : m) + '/' + y;
+            }
+          }
+        });
+      });
+    }
+
+    // Kích hoạt cho cả Ngày sinh và Ngày cấp CCCD
+    setupDateInputMask('#ngaySinh, #ngayCapCCCD');
+
+    let currentSide = 'front';
+    let frontCroppedDataUrl = null;
+    let backCroppedDataUrl = null;
+    let generatedPdfBase64 = null;
+    let cameraStream = null;
+    let currentFacingMode = "environment";
+    let cropper = null;
+
+    let lastFetchedPhone = "";
+    let isFetchingPhone = false;
+
+    function removeVietnameseTones(str) {
+      if (!str) return '';
+      return str.normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[đĐ]/g, m => m === 'đ' ? 'd' : 'D');
+    }
+
+    function trimTrailingSpaces(str) {
+      return typeof str === 'string' ? str.replace(/\s+$/, '') : (str || '');
+    }
+
+    document.querySelectorAll('.auto-trim').forEach(input => {
+      input.addEventListener('blur', function() {
+        this.value = trimTrailingSpaces(this.value);
+      });
+    });
+
+    const chuTkInput = document.getElementById('chuTaiKhoan');
+    chuTkInput.addEventListener('input', function() {
+      const pos = this.selectionStart;
+      this.value = removeVietnameseTones(this.value).toUpperCase();
+      this.setSelectionRange(pos, pos);
+    });
+
+    // --- SĐT ĐỦ 10 SỐ VÀ TỰ ĐỘNG ĐIỀN FORM ---
+    const phoneInput = document.getElementById('soDienThoai');
+    const phoneCounter = document.getElementById('phoneCounter');
+    const phoneStatus = document.getElementById('phoneStatus');
+
+    phoneInput.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '').slice(0, 10);
+      const val = this.value;
+      phoneCounter.innerText = `${val.length}/10 số`;
+
+      if (val.length < 10) {
+        phoneCounter.className = "text-xs font-mono text-slate-400";
+        phoneStatus.innerHTML = `<span class="text-slate-500 italic">Vui lòng nhập đủ 10 số (hiện tại: ${val.length}/10)</span>`;
+        lastFetchedPhone = "";
+      } else if (val.length === 10) {
+        if (!val.startsWith('0')) {
+          phoneCounter.className = "text-xs font-mono text-red-500 font-bold";
+          phoneStatus.innerHTML = `<span class="text-red-500 font-medium"><i class="fa-solid fa-circle-exclamation"></i> SĐT phải bắt đầu bằng số 0!</span>`;
+          return;
+        }
+        phoneCounter.className = "text-xs font-mono text-emerald-600 font-bold";
+        phoneStatus.innerHTML = `<span class="text-blue-600 font-medium animate-pulse"><i class="fa-solid fa-spinner fa-spin"></i> Đang tìm dữ liệu trong hệ thống...</span>`;
+        
+        if (val !== lastFetchedPhone) {
+          triggerAutoFillByPhone(val);
+        }
+      }
+    });
+
+    let serverHasPdf = false; // Biến ghi nhớ hồ sơ đã có link PDF CCCD trên Drive chưa
+
+    async function triggerAutoFillByPhone(phone) {
+      if (isFetchingPhone) return;
+      isFetchingPhone = true;
+      lastFetchedPhone = phone;
+
+      try {
+        const res = await fetch(`${APPS_SCRIPT_URL}?phone=${encodeURIComponent(phone)}`, {
+          method: 'GET',
+          redirect: 'follow'
+        });
+        const data = await res.json();
+
+        if (data.found) {
+          phoneStatus.innerHTML = `<span class="text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Đã nhận diện: ${data.hoTen} (${data.maSo})</span>`;
+
+          // 1. Tự động điền Họ tên, Vị trí, Ngân hàng
+          if (data.hoTen) document.getElementById('hoTen').value = data.hoTen;
+          if (data.maTheHDV) document.getElementById('maTheHDV').value = data.maTheHDV;
+
+          const role = (data.ngheNghiep || '').trim();
+          const radioToCheck = document.querySelector(`input[name="viTriOption"][value="${role}"]`);
+          if (radioToCheck) {
+            radioToCheck.checked = true;
+            handleRoleChange();
+          } else if (role) {
+            document.querySelector('input[name="viTriOption"][value="Khác"]').checked = true;
+            handleRoleChange();
+            document.getElementById('customRoleInput').value = role;
+          }
+
+          if (data.nganHang) document.getElementById('nganHang').value = data.nganHang;
+          if (data.soTaiKhoan) document.getElementById('soTaiKhoan').value = data.soTaiKhoan;
+          if (data.chuTaiKhoan) {
+            document.getElementById('chuTaiKhoan').value = removeVietnameseTones(data.chuTaiKhoan).toUpperCase();
+          }
+
+          // 2. Điền thông tin nếu ĐÃ CÓ (nếu thiếu thì làm nổi bật ô và bắt nhập)
+          // - Giới tính
+          if (data.hasGioiTinh) {
+            const r = document.querySelector(`input[name="gioiTinh"][value="${data.gioiTinh}"]`);
+            if (r) r.checked = true;
+            document.getElementById('gioiTinhBadge').classList.add('hidden');
+            document.getElementById('gioiTinhBox').classList.remove('border-red-500', 'bg-red-50');
+          } else {
+            document.querySelectorAll('input[name="gioiTinh"]').forEach(r => r.checked = false);
+            document.getElementById('gioiTinhBadge').classList.remove('hidden');
+            document.getElementById('gioiTinhBox').classList.add('border-red-500', 'bg-red-50');
+          }
+
+          // - Số CCCD
+          if (data.hasCCCD) {
+            document.getElementById('soCCCD').value = data.soCCCD;
+            document.getElementById('soCCCDBadge').classList.add('hidden');
+            document.getElementById('soCCCD').classList.remove('border-red-500', 'bg-red-50');
+          } else {
+            document.getElementById('soCCCD').value = '';
+            document.getElementById('soCCCDBadge').classList.remove('hidden');
+            document.getElementById('soCCCD').classList.add('border-red-500', 'bg-red-50');
+          }
+
+          // - Ngày tháng năm sinh (Nếu chỉ có 4 số năm -> bắt nhập lại)
+          if (data.hasValidBirthdate) {
+            document.getElementById('ngaySinh').value = data.namSinh;
+            document.getElementById('ngaySinhBadge').classList.add('hidden');
+            document.getElementById('ngaySinh').classList.remove('border-red-500', 'bg-red-50');
+          } else {
+            document.getElementById('ngaySinh').value = '';
+            document.getElementById('ngaySinhBadge').classList.remove('hidden');
+            document.getElementById('ngaySinh').classList.add('border-red-500', 'bg-red-50');
+          }
+
+          // - Ngày cấp CCCD
+          if (data.hasNgayCap) {
+            document.getElementById('ngayCapCCCD').value = data.ngayCap;
+            document.getElementById('ngayCapBadge').classList.add('hidden');
+            document.getElementById('ngayCapCCCD').classList.remove('border-red-500', 'bg-red-50');
+          } else {
+            document.getElementById('ngayCapCCCD').value = '';
+            document.getElementById('ngayCapBadge').classList.remove('hidden');
+            document.getElementById('ngayCapCCCD').classList.add('border-red-500', 'bg-red-50');
+          }
+
+          // - Địa chỉ thường trú
+          if (data.hasDiaChi) {
+            document.getElementById('diaChi').value = data.diaChi;
+            document.getElementById('diaChiBadge').classList.add('hidden');
+            document.getElementById('diaChi').classList.remove('border-red-500', 'bg-red-50');
+          } else {
+            document.getElementById('diaChi').value = '';
+            document.getElementById('diaChiBadge').classList.remove('hidden');
+            document.getElementById('diaChi').classList.add('border-red-500', 'bg-red-50');
+          }
+
+          // 3. Xử lý Cột L (Ảnh CCCD 2 mặt)
+          const pdfBadge = document.getElementById('pdfStatusBadge');
+          if (data.hasPdf) {
+            serverHasPdf = true;
+            pdfBadge.className = "text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-semibold border border-emerald-300";
+            pdfBadge.innerHTML = '<i class="fa-solid fa-check"></i> Đã có file PDF trên Drive (Không cần chụp lại)';
+          } else {
+            serverHasPdf = false;
+            pdfBadge.className = "text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-semibold border border-red-300 animate-pulse";
+            pdfBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Chưa có ảnh CCCD (Bắt buộc chụp/tải)';
+          }
+
+          // 4. Popup thông báo tình trạng hồ sơ
+          const missing = data.missingList || [];
+          if (missing.length > 0) {
+            Swal.fire({
+              icon: 'warning',
+              title: `Hồ sơ: ${data.hoTen} (${data.maSo})`,
+              html: `
+                <div class="text-left text-sm space-y-2.5 text-slate-700">
+                  <p>Hệ thống đã nhận diện mã số và giữ lại các thông tin đã có.</p>
+                  <div class="p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-xs">
+                    <p class="font-bold flex items-center gap-1.5 mb-1 text-red-800">
+                      <i class="fa-solid fa-triangle-exclamation"></i> Hồ sơ của bạn đang THIẾU các mục sau:
+                    </p>
+                    <ul class="list-disc list-inside space-y-1 font-semibold text-red-800">
+                      ${missing.map(m => `<li>${m}</li>`).join('')}
+                    </ul>
+                  </div>
+                  <p class="text-xs text-slate-500 italic">* Các mục đang thiếu đã được viền đỏ, bạn vui lòng hoàn thiện trước khi gửi mẫu.</p>
+                </div>
+              `,
+              confirmButtonText: 'Bổ sung ngay',
+              confirmButtonColor: '#2563eb'
+            });
+          } else {
+            Swal.fire({
+              icon: 'success',
+              title: `Hồ sơ: ${data.hoTen} (${data.maSo})`,
+              text: 'Hồ sơ của bạn đã có đầy đủ thông tin và ảnh CCCD!',
+              confirmButtonColor: '#2563eb'
+            });
+          }
+
+        } else {
+          phoneStatus.innerHTML = `<span class="text-amber-600"><i class="fa-solid fa-info-circle"></i> SĐT mới (chưa có trong Data) - vui lòng nhập mới toàn bộ.</span>`;
+          serverHasPdf = false;
+        }
+      } catch (err) {
+        phoneStatus.innerHTML = `<span class="text-red-500">Lỗi kiểm tra dữ liệu: ${err.message}</span>`;
+      } finally {
+        isFetchingPhone = false;
+      }
+    }
+
+    function handleMissingFieldsAlert(data) {
+      resetMissingBadges();
+      const missing = [];
+
+      // Kiểm tra thiếu Giới tính
+      const isMissingGioiTinh = data.isMissingGioiTinh || !document.querySelector('input[name="gioiTinh"]:checked');
+      if (isMissingGioiTinh) {
+        missing.push("Giới tính");
+        document.getElementById('gioiTinhBadge').classList.remove('hidden');
+        document.getElementById('gioiTinhBox').classList.add('border-red-500', 'bg-red-50');
+      }
+
+      const isMissingNgayCap = data.isMissingNgayCap || !document.getElementById('ngayCapCCCD').value;
+      const isMissingDiaChi = data.isMissingDiaChi || !document.getElementById('diaChi').value;
+
+      if (isMissingNgayCap) {
+        missing.push("Ngày cấp Căn cước công dân");
+        document.getElementById('ngayCapBadge').classList.remove('hidden');
+        document.getElementById('ngayCapCCCD').classList.add('border-red-500', 'bg-red-50');
+      }
+
+      if (isMissingDiaChi) {
+        missing.push("Địa chỉ thường trú");
+        document.getElementById('diaChiBadge').classList.remove('hidden');
+        document.getElementById('diaChi').classList.add('border-red-500', 'bg-red-50');
+      }
+
+      if (missing.length > 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: `Hồ sơ: ${data.hoTen} (${data.maSo})`,
+          html: `
+            <div class="text-left text-sm space-y-2.5 mt-2">
+              <p class="text-slate-700">Hệ thống đã tự động điền các thông tin có sẵn từ <strong>sheet Data</strong>.</p>
+              <div class="p-3 bg-red-50 border border-red-300 rounded-lg text-red-700">
+                <p class="font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Hồ sơ của bạn đang THIẾU thông tin sau:</p>
+                <ul class="list-disc list-inside space-y-1 font-semibold text-red-800">
+                  ${missing.map(m => `<li>${m}</li>`).join('')}
+                </ul>
+              </div>
+              <p class="text-xs text-slate-500 italic">* Các mục đang thiếu đã được viền đỏ phía dưới, bạn vui lòng điền bổ sung và nạp ảnh CCCD 2 mặt để hoàn tất.</p>
+            </div>
+          `,
+          confirmButtonText: 'Bổ sung thông tin ngay',
+          confirmButtonColor: '#2563eb'
+        });
+      } else {
+        const Toast = Swal.mixin({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true
+        });
+        Toast.fire({
+          icon: 'success',
+          title: `Đã tự động điền đủ hồ sơ: ${data.hoTen}`
+        });
+      }
+    }
+
+    function resetMissingBadges() {
+      document.getElementById('gioiTinhBadge').classList.add('hidden');
+      document.getElementById('gioiTinhBox').classList.remove('border-red-500', 'bg-red-50');
+      document.getElementById('ngayCapBadge').classList.add('hidden');
+      document.getElementById('diaChiBadge').classList.add('hidden');
+      document.getElementById('ngayCapCCCD').classList.remove('border-red-500', 'bg-red-50');
+      document.getElementById('diaChi').classList.remove('border-red-500', 'bg-red-50');
+    }
+
+    // Tự động tắt viền đỏ khi người dùng bấm chọn Nam hoặc Nữ
+    document.querySelectorAll('input[name="gioiTinh"]').forEach(r => {
+      r.addEventListener('change', () => {
+        document.getElementById('gioiTinhBadge').classList.add('hidden');
+        document.getElementById('gioiTinhBox').classList.remove('border-red-500', 'bg-red-50');
+      });
+    });
+
+    function handleRoleChange() {
+      const selected = document.querySelector('input[name="viTriOption"]:checked').value;
+      const customBox = document.getElementById('customRoleBox');
+      const customInput = document.getElementById('customRoleInput');
+      const ctvBox = document.getElementById('ctvExtraBox');
+
+      // 1. Xử lý khi chọn "Khác"
+      if (selected === 'Khác') {
+        customBox.classList.remove('hidden');
+        customInput.focus();
+      } else {
+        customBox.classList.add('hidden');
+        customInput.value = '';
+      }
+
+      // 2. Xử lý khi chọn "CTV"
+      if (selected === 'CTV') {
+        ctvBox.classList.remove('hidden');
+      } else {
+        ctvBox.classList.add('hidden');
+      }
+    }
+
+    async function startCameraCapture(side) {
+      currentSide = side;
+      document.getElementById('camSideIndicator').innerText = (side === 'front') ? 'Mặt trước' : 'Mặt sau';
+      document.getElementById('cameraModal').classList.remove('hidden');
+
+      try {
+        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false
+        });
+        document.getElementById('cameraVideo').srcObject = cameraStream;
+      } catch (err) {
+        Swal.fire('Lỗi máy ảnh', 'Không thể khởi động camera. Vui lòng cấp quyền!', 'error');
+        closeCameraModal();
+      }
+    }
+
+    function switchCamera() {
+      currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+      startCameraCapture(currentSide);
+    }
+
+    function closeCameraModal() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      document.getElementById('cameraModal').classList.add('hidden');
+    }
+
+    function takeSnapshot() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      closeCameraModal();
+      openCropModal(dataUrl);
+    }
+
+    function handleFileSelect(event, side) {
+      currentSide = side;
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => openCropModal(e.target.result);
+      reader.readAsDataURL(file);
+      event.target.value = "";
+    }
+
+    function openCropModal(imageSrc) {
+      const modal = document.getElementById('cropModal');
+      const image = document.getElementById('imageToCrop');
+      image.src = imageSrc;
+      modal.classList.remove('hidden');
+
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(image, {
+        aspectRatio: 85.6 / 53.98,
+        viewMode: 1,
+        autoCropArea: 0.92,
+        responsive: true
+      });
+    }
+
+    function rotateCropImage(degree) {
+      if (cropper) cropper.rotate(degree);
+    }
+
+    function closeCropModal() {
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      document.getElementById('cropModal').classList.add('hidden');
+    }
+
+    function applyCrop() {
+      if (!cropper) return;
+      const canvas = cropper.getCroppedCanvas({ width: 900, height: 570, imageSmoothingQuality: 'medium' });
+      const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      if (currentSide === 'front') {
+        frontCroppedDataUrl = croppedDataUrl;
+        document.getElementById('frontPreview').src = croppedDataUrl;
+        document.getElementById('frontPreview').classList.remove('hidden');
+        document.getElementById('frontPlaceholder').classList.add('hidden');
+      } else {
+        backCroppedDataUrl = croppedDataUrl;
+        document.getElementById('backPreview').src = croppedDataUrl;
+        document.getElementById('backPreview').classList.remove('hidden');
+        document.getElementById('backPlaceholder').classList.add('hidden');
+      }
+
+      closeCropModal();
+      checkAndGeneratePdf();
+    }
+
+    // --- Ghép 2 ảnh vào PDF (CHỈ CÓ 2 ẢNH, HOÀN TOÀN KHÔNG CHÈN CHỮ) ---
+    async function checkAndGeneratePdf() {
+      if (!frontCroppedDataUrl || !backCroppedDataUrl) return;
+
+      const badge = document.getElementById('pdfStatusBadge');
+      badge.className = "text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold";
+      badge.innerText = "Đang ghép PDF...";
+
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        // Kích thước chuẩn tỉ lệ CCCD trên khổ A4 (rộng 150mm, cao 94.6mm)
+        const cardWidth = 150;
+        const cardHeight = 94.6;
+        const xPos = (210 - cardWidth) / 2; // Căn giữa khổ giấy A4 theo chiều ngang
+
+        // 1. Ảnh mặt trước (ở nửa trên trang giấy)
+        doc.addImage(frontCroppedDataUrl, 'JPEG', xPos, 30, cardWidth, cardHeight);
+
+        // 2. Ảnh mặt sau (ở nửa dưới trang giấy)
+        doc.addImage(backCroppedDataUrl, 'JPEG', xPos, 155, cardWidth, cardHeight);
+
+        const pdfOutput = doc.output('datauristring');
+        generatedPdfBase64 = pdfOutput.split(',')[1];
+
+        badge.className = "text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold";
+        badge.innerHTML = '<i class="fa-solid fa-check"></i> Đã ghép PDF sẵn sàng';
+      } catch (e) {
+        badge.className = "text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-full";
+        badge.innerText = "Lỗi ghép PDF";
+      }
+    }
+
+    async function uploadToImgBB(base64Data, fileName) {
+      const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
+      const formData = new FormData();
+      formData.append('key', IMGBB_API_KEY);
+      formData.append('image', cleanBase64);
+      formData.append('name', fileName);
+
+      const response = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+      const resData = await response.json();
+      if (resData.success) return resData.data.url;
+      throw new Error(resData.error ? resData.error.message : 'Lỗi upload ảnh ImgBB');
+    }
+
+    // --- GỬI DỮ LIỆU FORM (ĐÃ KIỂM TRA GIỚI TÍNH, CCCD 12 SỐ, HỌ TÊN = CHỦ TK, CTV) ---
+    document.getElementById('personnelForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // 1. Kiểm tra bắt buộc chọn Giới tính đầu tiên
+      const checkedGioiTinh = document.querySelector('input[name="gioiTinh"]:checked');
+      if (!checkedGioiTinh) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Thiếu thông tin giới tính!',
+          text: 'Vui lòng tích chọn Giới tính của bạn (Nam hoặc Nữ).',
+          confirmButtonText: 'Đã hiểu',
+          confirmButtonColor: '#2563eb'
+        });
+        const gBox = document.getElementById('gioiTinhBox');
+        if (gBox) gBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      const gioiTinhVal = checkedGioiTinh.value;
+
+      // 2. Kiểm tra Số điện thoại (10 số, bắt đầu bằng số 0)
+      const phone = trimTrailingSpaces(document.getElementById('soDienThoai').value).replace(/\D/g, '');
+      if (phone.length !== 10 || !phone.startsWith('0')) {
+        Swal.fire('Sai số điện thoại', 'Số điện thoại bắt buộc phải có đúng 10 chữ số và bắt đầu bằng số 0!', 'warning');
+        document.getElementById('soDienThoai').focus();
+        return;
+      }
+
+      // 3. Kiểm tra Số CCCD (đúng 12 chữ số)
+      const cccd = trimTrailingSpaces(document.getElementById('soCCCD').value).replace(/\D/g, '');
+      if (cccd.length !== 12) {
+        Swal.fire('Sai Số CCCD', 'Số Căn cước công dân bắt buộc phải gồm đúng 12 chữ số!', 'warning');
+        document.getElementById('soCCCD').focus();
+        return;
+      }
+
+      // 4. Bắt buộc Họ tên và Chủ tài khoản phải giống nhau
+      const hoTenClean = removeVietnameseTones(trimTrailingSpaces(document.getElementById('hoTen').value)).toUpperCase().replace(/\s+/g, ' ');
+      const chuTkClean = removeVietnameseTones(trimTrailingSpaces(document.getElementById('chuTaiKhoan').value)).toUpperCase().replace(/\s+/g, ' ');
+
+      if (hoTenClean !== chuTkClean) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Họ tên và Chủ tài khoản không khớp!',
+          html: `
+            <div class="text-left text-sm space-y-2 text-slate-700">
+              <p>Họ và tên: <strong class="text-blue-700">${hoTenClean}</strong></p>
+              <p>Chủ tài khoản: <strong class="text-red-600">${chuTkClean}</strong></p>
+              <p class="text-xs text-red-600 italic mt-2">Bắt buộc Họ tên và Chủ tài khoản phải giống nhau để bảo vệ an toàn thanh toán, tránh sửa số tài khoản của người khác.</p>
+            </div>
+          `,
+          confirmButtonText: 'Kiểm tra lại',
+          confirmButtonColor: '#2563eb'
+        });
+        return;
+      }
+
+      // 5. Kiểm tra bắt buộc có ảnh CCCD (nếu trên Drive chưa có file thì bắt buộc phải nạp ảnh)
+      const hasNewPhotos = Boolean(frontCroppedDataUrl && backCroppedDataUrl);
+      if (!serverHasPdf && !hasNewPhotos) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Thiếu ảnh chụp CCCD 2 mặt!',
+          text: 'Hồ sơ của bạn chưa có file PDF ảnh CCCD trên Google Drive. Vui lòng chụp hoặc thêm đầy đủ cả 2 mặt CCCD để tiếp tục!',
+          confirmButtonColor: '#2563eb'
+        });
+        document.getElementById('frontPreviewContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // 6. Kiểm tra Vị trí công việc & các mục phát sinh của CTV
+      const selectedRole = document.querySelector('input[name="viTriOption"]:checked').value;
+      let finalRole = selectedRole;
+      let phuongTienVal = '';
+      let noiOVal = '';
+
+      if (selectedRole === 'Khác') {
+        finalRole = trimTrailingSpaces(document.getElementById('customRoleInput').value);
+        if (!finalRole) {
+          Swal.fire('Thiếu thông tin', 'Vui lòng nhập vị trí công việc khi chọn "Khác"!', 'warning');
+          return;
+        }
+      } else if (selectedRole === 'CTV') {
+        const checkedVehicle = document.querySelector('input[name="phuongTien"]:checked');
+        if (!checkedVehicle) {
+          Swal.fire('Thiếu thông tin CTV', 'Vui lòng chọn phương tiện bạn sử dụng (Xe máy, Xe bus...)!', 'warning');
+          return;
+        }
+        phuongTienVal = checkedVehicle.value;
+
+        noiOVal = trimTrailingSpaces(document.getElementById('noiO').value);
+        if (!noiOVal) {
+          Swal.fire('Thiếu thông tin CTV', 'Vui lòng nhập Phường nơi bạn đang ở hiện tại!', 'warning');
+          document.getElementById('noiO').focus();
+          return;
+        }
+      }
+
+      const last4 = phone.slice(-4);
+
+      Swal.fire({
+        title: 'Đang lưu dữ liệu...',
+        html: `
+          <div class="space-y-2 text-sm text-slate-600">
+            <p><i class="fa-solid fa-spinner fa-spin text-blue-600"></i> Đang tải ảnh lên hệ thống...</p>
+            <p><i class="fa-solid fa-spinner fa-spin text-blue-600"></i> Đang tạo PDF & đồng bộ Sheet...</p>
+          </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      try {
+        const frontUrl = await uploadToImgBB(frontCroppedDataUrl, `CCCD_Front_${last4}`);
+        const backUrl = await uploadToImgBB(backCroppedDataUrl, `CCCD_Back_${last4}`);
+
+        const payload = {
+          hoTen: trimTrailingSpaces(document.getElementById('hoTen').value),
+          gioiTinh: gioiTinhVal,
+          soDienThoai: phone,
+          ngaySinh: document.getElementById('ngaySinh').value,
+          soCCCD: cccd,
+          ngayCapCCCD: document.getElementById('ngayCapCCCD').value,
+          diaChi: trimTrailingSpaces(document.getElementById('diaChi').value),
+          viTri: finalRole,
+          phuongTien: phuongTienVal,
+          noiO: noiOVal,
+          maTheHDV: trimTrailingSpaces(document.getElementById('maTheHDV').value),
+          nganHang: trimTrailingSpaces(document.getElementById('nganHang').value),
+          soTaiKhoan: trimTrailingSpaces(document.getElementById('soTaiKhoan').value),
+          chuTaiKhoan: chuTkClean,
+          frontImgUrl: frontUrl,
+          backImgUrl: backUrl,
+          pdfBase64: generatedPdfBase64
+        };
+
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          const code = result.employeeCode;
+          Swal.fire({
+            icon: 'success',
+            title: 'Chúc mừng bạn đã điền xong thông tin thanh toán nhân sự.',
+            html: `
+              <div class="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-xl text-left space-y-2 text-sm text-slate-700">
+                <p>Mã số của bạn là: <strong class="text-blue-700 text-lg">${code}</strong></p>
+                <p>4 số cuối là số điện thoại của bạn.</p>
+                <p class="text-slate-500 italic text-xs">Nếu không nhớ thì khi bạn truy cập chức năng đăng nhập chỉ cần nhập đúng số điện thoại để tra cứu.</p>
+              </div>
+            `,
+            confirmButtonText: 'Đã hiểu và hoàn tất',
+            confirmButtonColor: '#2563eb'
+          }).then(() => {
+            document.getElementById('personnelForm').reset();
+            location.reload();
+          });
+        } else {
+          throw new Error(result.error || 'Lỗi lưu Google Sheet');
+        }
+
+      } catch (err) {
+        Swal.fire('Lỗi khi lưu', err.message, 'error');
+      }
+    });
+
+    // --- TRA CỨU MÃ NHÂN SỰ (BẢO MẬT: CHỈ HIỆN ĐÃ CÓ / ĐANG THIẾU) ---
+    async function openLookupModal() {
+      const { value: phone } = await Swal.fire({
+        title: 'Tra cứu thông tin nhân sự',
+        input: 'tel',
+        inputLabel: 'Nhập số điện thoại đã đăng ký (10 số):',
+        inputPlaceholder: 'Ví dụ: 0389975487',
+        showCancelButton: true,
+        confirmButtonText: 'Tra cứu ngay',
+        cancelButtonText: 'Đóng',
+        inputValidator: (val) => {
+          if (!val) return 'Vui lòng nhập số điện thoại!';
+          const clean = val.replace(/\D/g, '');
+          if (clean.length !== 10 || !clean.startsWith('0')) {
+            return 'Số điện thoại phải đủ 10 số và bắt đầu bằng số 0!';
+          }
+        }
+      });
+
+      if (phone) {
+        const cleanPhone = phone.replace(/\D/g, '');
+        Swal.fire({ title: 'Đang kiểm tra hệ thống...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+        try {
+          const res = await fetch(`${APPS_SCRIPT_URL}?phone=${encodeURIComponent(cleanPhone)}`, {
+            method: 'GET',
+            redirect: 'follow'
+          });
+          const data = await res.json();
+
+          if (data.found) {
+            const hasMissing = data.missingList && data.missingList.length > 0;
+
+            Swal.fire({
+              icon: hasMissing ? 'warning' : 'info',
+              title: 'Kết quả tra cứu',
+              html: `
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-left text-sm space-y-2.5">
+                  <div class="flex justify-between border-b pb-2 items-center">
+                    <span class="text-slate-500 font-medium">Mã nhân sự (cột B):</span>
+                    <span class="text-blue-700 font-bold text-base">${data.maSo || 'Chưa cấp'}</span>
+                  </div>
+                  <div class="flex justify-between border-b pb-2 items-center">
+                    <span class="text-slate-500 font-medium">Họ và tên (cột D):</span>
+                    <span class="text-slate-800 font-semibold">${data.hoTen || '-'}</span>
+                  </div>
+                  <div class="flex justify-between border-b pb-2 items-center">
+                    <span class="text-slate-500 font-medium">Nghề nghiệp (cột H):</span>
+                    <span class="text-slate-800">${data.ngheNghiep || '-'}</span>
+                  </div>
+                  <div class="flex justify-between border-b pb-2 items-center">
+                    <span class="text-slate-500 font-medium">Ngân hàng (cột I):</span>
+                    <span class="text-slate-800">${data.nganHang || '-'}</span>
+                  </div>
+                  <div class="flex justify-between border-b pb-2 items-center">
+                    <span class="text-slate-500 font-medium">Số tài khoản (cột J):</span>
+                    <span class="text-slate-800 font-mono font-medium">${data.soTaiKhoan || '-'}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-medium">Chủ tài khoản (cột K):</span>
+                    <span class="text-slate-800 font-semibold uppercase">${data.chuTaiKhoan || '-'}</span>
+                  </div>
+
+                  ${(data.missingList && data.missingList.length > 0) ? `
+                    <div class="mt-3 p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-xs">
+                      <p class="font-bold flex items-center gap-1.5 mb-1">
+                        <i class="fa-solid fa-circle-exclamation"></i> Lưu ý: Hồ sơ đang thiếu ${data.missingList.join(', ')}.
+                      </p>
+                      <p class="mt-1 text-slate-600">Bấm <strong>"Tự động điền vào Form"</strong> để nạp thông tin và bổ sung phần còn thiếu.</p>
+                    </div>
+                  ` : `
+                    <div class="mt-3 p-2.5 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-800 text-xs font-medium flex items-center gap-2">
+                      <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+                      <span>Hồ sơ của bạn đã đầy đủ.</span>
+                    </div>
+                  `}
+                </div>
+              `,
+              showCancelButton: true,
+              confirmButtonText: '<i class="fa-solid fa-pen-to-square"></i> Tự động điền vào Form',
+              cancelButtonText: 'Đóng',
+              confirmButtonColor: '#2563eb'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                document.getElementById('soDienThoai').value = cleanPhone;
+                document.getElementById('soDienThoai').dispatchEvent(new Event('input'));
+              }
+            });
+
+          } else {
+            Swal.fire('Không tìm thấy', data.message || 'Không tìm thấy dữ liệu cho số điện thoại này.', 'warning');
+          }
+        } catch (err) {
+          Swal.fire('Lỗi', 'Không thể kết nối máy chủ tra cứu: ' + err.message, 'error');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
