@@ -398,7 +398,7 @@
 
     <!-- Khung Camera & Khung nét đứt đứng (khi cầm ngang máy thì biến thành khung ngang bao trọn) -->
     <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2 bg-black">
-      <video id="cameraVideo" autoplay playsinline webkit-playsinline muted class="w-full h-full object-cover"></video>
+      <video id="cameraVideo" autoplay playsinline webkit-playsinline muted class="w-full h-full object-cover pointer-events-none"></video>
 
       <!-- Khung nét đứt gợi ý: tỷ lệ đứng 54/85.6, cao 68vh -->
       <div class="absolute h-[68vh] max-h-[540px] max-w-[85vw] aspect-[54/85.6] rounded-xl landscape-guide-box pointer-events-none flex flex-col justify-between p-3 text-white z-10">
@@ -1187,16 +1187,16 @@
 
         const video = document.getElementById('cameraVideo');
         
-        // 1. Ép thuộc tính Boolean trực tiếp vào DOM (Bắt buộc đối với iOS WebKit)
-        video.muted = true;
+        // 1. KHÓA ÉP PHÁT INLINE (TUYỆT ĐỐI KHÔNG BẬT CONTROLS ĐỂ KHÔNG BỊ NHẢY SANG TRÌNH PHÁT APPLE)
+        video.removeAttribute('controls');
+        video.controls = false;
         video.playsInline = true;
+        video.muted = true;
         video.setAttribute('playsinline', '');
         video.setAttribute('webkit-playsinline', '');
         
-        // 2. Gán luồng camera
+        // 2. GÁN LUỒNG VÀ PHÁT TRỰC TIẾP
         video.srcObject = cameraStream;
-
-        // 3. Gọi phát trực tiếp (KHÔNG dùng onloadedmetadata để tránh bị treo trên iPhone)
         video.play().catch(e => console.log("Lỗi play camera:", e));
 
       } catch (err) {
