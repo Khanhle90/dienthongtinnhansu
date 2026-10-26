@@ -275,14 +275,33 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Số tài khoản <span class="text-red-500">*</span></label>
-            <input type="text" id="soTaiKhoan" required placeholder="Nhập số tài khoản gốc" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
-            <p class="text-[11px] text-amber-700 mt-1">Lưu ý khi STK là SĐT: ABA chuyển theo lô, nên bắt buộc dùng số tài khoản gốc (đặc biệt BIDV, VietinBank). nếu số tài khoản của bạn là SĐT, hãy thử tự kiểm tra đặt lệnh chuyển tiền vào tài khoản của bạn, nếu vẫn hiện SĐT thì đó là số TK gốc, còn nếu hiện số khác cùng tên tài khoản thì vui lòng nhập số TK gốc vừa hiện lên</p>
-          </div>
+          <!-- 1. CHỦ TÀI KHOẢN ĐÃ ĐƯỢC ĐƯA LÊN TRƯỚC -->
           <div>
             <label class="block text-sm font-medium mb-1">Chủ tài khoản (Không dấu) <span class="text-red-500">*</span></label>
             <input type="text" id="chuTaiKhoan" required placeholder="VIET HOA KHONG DAU" class="w-full px-3 py-2 border rounded-lg uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
+          </div>
+
+          <!-- 2. SỐ TÀI KHOẢN KÈM ẢNH ĐẶT Ở PHÍA SAU -->
+          <div>
+            <label class="block text-sm font-medium mb-1">Số tài khoản <span class="text-red-500">*</span></label>
+            <input type="text" id="soTaiKhoan" required placeholder="Nhập số tài khoản gốc" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
+            
+            <!-- KHUNG HƯỚNG DẪN KIỂM TRA STK GỐC KÈM ẢNH MINH HỌA -->
+            <div class="mt-2.5 p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+              <div class="flex items-start gap-1.5 text-xs text-amber-900 font-medium leading-relaxed">
+                <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 flex-shrink-0"></i>
+                <span>
+                  <strong>Lưu ý khi STK là SĐT:</strong> ABA CTP theo lô nên bắt buộc nhập <strong>Số tài khoản gốc</strong> (đặc biệt là BIDV, VietinBank). 
+                  Nếu tài khoản của bạn là SĐT, hãy thử đặt lệnh chuyển tiền vào tài khoản đó, xem số tài khoản hay tên người nhận có bất kỳ <strong>dãy số nào khác như hình</strong> không. Nếu có, hãy nhập theo số mới xuất hiện.
+                </span>
+              </div>
+              
+              <!-- Ảnh minh họa thực tế -->
+              <div class="rounded-lg overflow-hidden border border-amber-200 bg-white p-1 shadow-sm">
+                <img src="huong_dan_stk.png" alt="Minh họa lấy số tài khoản gốc" class="w-full object-contain rounded cursor-pointer hover:opacity-95 transition" onclick="window.open(this.src, '_blank')">
+              </div>
+              <p class="text-[10px] text-slate-500 italic text-center">* Nhấp vào ảnh để xem kích thước lớn hơn</p>
+            </div>
           </div>
         </div>
       </section>
