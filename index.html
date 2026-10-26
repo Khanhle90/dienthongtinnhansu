@@ -66,7 +66,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="md:col-span-2">
             <label class="block text-sm font-medium mb-1">Họ và tên <span class="text-red-500">*</span></label>
-            <input type="text" id="hoTen" required placeholder="Ví dụ: Lê Duy Khánh" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
+            <input type="text" id="hoTen" required placeholder="Ví dụ: Trần Minh Đức" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim">
           </div>
           <div>
             <div class="flex items-center justify-between mb-1.5">
@@ -115,7 +115,7 @@
               Địa chỉ thường trú (theo CCCD) <span class="text-red-500">*</span>
               <span id="diaChiBadge" class="hidden text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded ml-1">Đang thiếu</span>
             </label>
-            <input type="text" id="diaChi" required placeholder="Xã/Phường, Quận/Huyện, Tỉnh/TP" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim transition-all">
+            <input type="text" id="diaChi" required placeholder="Ghi đúng nội dung thường trú theo CCCD" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none auto-trim transition-all">
           </div>
         </div>
       </section>
@@ -287,48 +287,74 @@
         </div>
       </section>
 
-      <!-- 4. TẢI ẢNH CCCD 2 MẶT -->
+      <!-- 4. TẢI ẢNH CCCD 2 MẶT (CÓ ẢNH MẪU MINH HỌA) -->
       <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
         <h2 class="text-base font-semibold text-blue-800 border-b pb-2 flex items-center justify-between">
           <span class="flex items-center gap-2"><i class="fa-solid fa-id-card"></i> 4. Ảnh CCCD 2 mặt (Chụp ngang / Cắt chuẩn)</span>
           <span id="pdfStatusBadge" class="text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full font-normal">Chưa tạo PDF</span>
         </h2>
 
+        <!-- Khung lưu ý tiêu chuẩn chụp ảnh -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5 text-xs text-blue-800 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-blue-600 text-sm flex-shrink-0"></i>
+          <span>Vui lòng chụp theo ảnh mẫu: chụp vuông góc, rõ nét thông tin, không bị lóa sáng và lấy trọn 4 góc thẻ.</span>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- 1. MẶT TRƯỚC -->
           <div class="border rounded-xl p-3 bg-slate-50 text-center">
-            <p class="font-medium text-sm text-slate-700 mb-2">1. Mặt trước CCCD <span class="text-red-500">*</span></p>
-            <div id="frontPreviewContainer" class="h-40 bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden mb-3 relative">
-              <span id="frontPlaceholder" class="text-xs text-slate-400 flex flex-col items-center gap-1">
-                <i class="fa-regular fa-image text-2xl"></i> Chưa có ảnh mặt trước
-              </span>
+            <div class="flex items-center justify-between mb-2">
+              <p class="font-medium text-sm text-slate-700">1. Mặt trước CCCD <span class="text-red-500">*</span></p>
+              <span class="text-[11px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-medium">Ảnh mẫu</span>
+            </div>
+            
+            <div id="frontPreviewContainer" class="h-44 bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden mb-3 relative">
+              <!-- Placeholder hiển thị ảnh mẫu khi chưa tải ảnh của người dùng -->
+              <div id="frontPlaceholder" class="w-full h-full p-2 flex flex-col items-center justify-center relative cursor-pointer" onclick="document.querySelector('#frontFileInput').click()">
+                <img src="cccd_mau_truoc.png" alt="Mẫu mặt trước CCCD" class="w-full h-full object-contain opacity-70 hover:opacity-90 transition">
+                <span class="absolute bottom-1 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm pointer-events-none">
+                  <i class="fa-regular fa-image"></i> Hình mẫu mặt trước
+                </span>
+              </div>
               <img id="frontPreview" class="hidden w-full h-full object-contain">
             </div>
+
             <div class="flex gap-2">
               <button type="button" onclick="startCameraCapture('front')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition">
                 <i class="fa-solid fa-camera"></i> Chụp ảnh
               </button>
               <label class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition">
                 <i class="fa-solid fa-folder-open"></i> Thêm tệp
-                <input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'front')">
+                <input type="file" id="frontFileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'front')">
               </label>
             </div>
           </div>
 
+          <!-- 2. MẶT SAU -->
           <div class="border rounded-xl p-3 bg-slate-50 text-center">
-            <p class="font-medium text-sm text-slate-700 mb-2">2. Mặt sau CCCD <span class="text-red-500">*</span></p>
-            <div id="backPreviewContainer" class="h-40 bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden mb-3 relative">
-              <span id="backPlaceholder" class="text-xs text-slate-400 flex flex-col items-center gap-1">
-                <i class="fa-regular fa-image text-2xl"></i> Chưa có ảnh mặt sau
-              </span>
+            <div class="flex items-center justify-between mb-2">
+              <p class="font-medium text-sm text-slate-700">2. Mặt sau CCCD <span class="text-red-500">*</span></p>
+              <span class="text-[11px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-medium">Ảnh mẫu</span>
+            </div>
+
+            <div id="backPreviewContainer" class="h-44 bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden mb-3 relative">
+              <!-- Placeholder hiển thị ảnh mẫu khi chưa tải ảnh của người dùng -->
+              <div id="backPlaceholder" class="w-full h-full p-2 flex flex-col items-center justify-center relative cursor-pointer" onclick="document.querySelector('#backFileInput').click()">
+                <img src="cccd_mau_sau.png" alt="Mẫu mặt sau CCCD" class="w-full h-full object-contain opacity-70 hover:opacity-90 transition">
+                <span class="absolute bottom-1 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm pointer-events-none">
+                  <i class="fa-regular fa-image"></i> Hình mẫu mặt sau
+                </span>
+              </div>
               <img id="backPreview" class="hidden w-full h-full object-contain">
             </div>
+
             <div class="flex gap-2">
               <button type="button" onclick="startCameraCapture('back')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 transition">
                 <i class="fa-solid fa-camera"></i> Chụp ảnh
               </button>
               <label class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs py-2 px-2 rounded-lg flex items-center justify-center gap-1.5 cursor-pointer transition">
                 <i class="fa-solid fa-folder-open"></i> Thêm tệp
-                <input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'back')">
+                <input type="file" id="backFileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'back')">
               </label>
             </div>
           </div>
@@ -875,7 +901,7 @@
             cccdBadge.classList.remove('hidden');
             cccdInp.classList.remove('border-red-500', 'bg-red-50');
           } else {
-            cccdInp.placeholder = 'Nhập 12 số CCCD';
+            cccdInp.placeholder = 'Nhập đủ 12 số CCCD';
             cccdInp.setAttribute('required', '');
             cccdBadge.className = 'text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-200';
             cccdBadge.innerText = 'Đang thiếu';
@@ -1554,7 +1580,7 @@
         title: 'Tra cứu thông tin nhân sự',
         input: 'tel',
         inputLabel: 'Nhập số điện thoại đã đăng ký (10 số):',
-        inputPlaceholder: 'Ví dụ: 0389975487',
+        inputPlaceholder: 'Ví dụ: 0389975488',
         showCancelButton: true,
         confirmButtonText: 'Tra cứu ngay',
         cancelButtonText: 'Đóng',
