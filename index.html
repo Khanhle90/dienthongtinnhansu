@@ -810,7 +810,8 @@
       }
     });
 
-    let serverHasPdf = false; // Biến ghi nhớ hồ sơ đã có link PDF CCCD trên Drive chưa
+    let serverHasPdf = false;
+    let currentServerData = null; // Lưu trạng thái các trường đã có sẵn trên Sheet Data
 
     async function triggerAutoFillByPhone(phone) {
       if (isFetchingPhone) return;
@@ -825,6 +826,7 @@
         const data = await res.json();
 
         if (data.found) {
+          currentServerData = data;
           phoneStatus.innerHTML = `<span class="text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Đã nhận diện: ${data.hoTen} (${data.maSo})</span>`;
 
           // 1. Tự động điền Họ tên, Vị trí, Ngân hàng
@@ -848,8 +850,7 @@
             document.getElementById('chuTaiKhoan').value = removeVietnameseTones(data.chuTaiKhoan).toUpperCase();
           }
 
-          // 2. Điền thông tin nếu ĐÃ CÓ (nếu thiếu thì làm nổi bật ô và bắt nhập)
-          // - Giới tính
+          // 2. Giới tính
           if (data.hasGioiTinh) {
             const r = document.querySelector(`input[name="gioiTinh"][value="${data.gioiTinh}"]`);
             if (r) r.checked = true;
@@ -861,51 +862,88 @@
             document.getElementById('gioiTinhBox').classList.add('border-red-500', 'bg-red-50');
           }
 
+          // 3. BẢO MẬT: KHÔNG TỰ ĐIỀN 4 TRƯỜNG NHẠY CẢM, NẾU ĐÃ CÓ THÌ BỎ BẮT BUỘC NHẬP
           // - Số CCCD
+          const cccdInp = document.getElementById('soCCCD');
+          const cccdBadge = document.getElementById('soCCCDBadge');
+          cccdInp.value = ''; // Để trống bảo mật
           if (data.hasCCCD) {
-            document.getElementById('soCCCD').value = data.soCCCD;
-            document.getElementById('soCCCDBadge').classList.add('hidden');
-            document.getElementById('soCCCD').classList.remove('border-red-500', 'bg-red-50');
+            cccdInp.placeholder = '•••••••••••• (Đã có trong hệ thống - Để trống nếu không đổi)';
+            cccdInp.removeAttribute('required');
+            cccdBadge.className = 'text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200';
+            cccdBadge.innerHTML = '<i class="fa-solid fa-check"></i> Đã có dữ liệu';
+            cccdBadge.classList.remove('hidden');
+            cccdInp.classList.remove('border-red-500', 'bg-red-50');
           } else {
-            document.getElementById('soCCCD').value = '';
-            document.getElementById('soCCCDBadge').classList.remove('hidden');
-            document.getElementById('soCCCD').classList.add('border-red-500', 'bg-red-50');
+            cccdInp.placeholder = 'Nhập 12 số CCCD';
+            cccdInp.setAttribute('required', '');
+            cccdBadge.className = 'text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-200';
+            cccdBadge.innerText = 'Đang thiếu';
+            cccdBadge.classList.remove('hidden');
+            cccdInp.classList.add('border-red-500', 'bg-red-50');
           }
 
-          // - Ngày tháng năm sinh (Nếu chỉ có 4 số năm -> bắt nhập lại)
+          // - Ngày tháng năm sinh (Nếu chỉ có 4 số năm -> bắt nhập lại đủ ngày/tháng/năm)
+          const nsInp = document.getElementById('ngaySinh');
+          const nsBadge = document.getElementById('ngaySinhBadge');
+          nsInp.value = ''; // Để trống bảo mật
           if (data.hasValidBirthdate) {
-            document.getElementById('ngaySinh').value = data.namSinh;
-            document.getElementById('ngaySinhBadge').classList.add('hidden');
-            document.getElementById('ngaySinh').classList.remove('border-red-500', 'bg-red-50');
+            nsInp.placeholder = '••/••/•••• (Đã có trong hệ thống - Để trống nếu không đổi)';
+            nsInp.removeAttribute('required');
+            nsBadge.className = 'text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200';
+            nsBadge.innerHTML = '<i class="fa-solid fa-check"></i> Đã có dữ liệu';
+            nsBadge.classList.remove('hidden');
+            nsInp.classList.remove('border-red-500', 'bg-red-50');
           } else {
-            document.getElementById('ngaySinh').value = '';
-            document.getElementById('ngaySinhBadge').classList.remove('hidden');
-            document.getElementById('ngaySinh').classList.add('border-red-500', 'bg-red-50');
+            nsInp.placeholder = 'dd/mm/yyyy';
+            nsInp.setAttribute('required', '');
+            nsBadge.className = 'text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-200';
+            nsBadge.innerText = 'Nhập đủ ngày/tháng/năm';
+            nsBadge.classList.remove('hidden');
+            nsInp.classList.add('border-red-500', 'bg-red-50');
           }
 
           // - Ngày cấp CCCD
+          const ncInp = document.getElementById('ngayCapCCCD');
+          const ncBadge = document.getElementById('ngayCapBadge');
+          ncInp.value = ''; // Để trống bảo mật
           if (data.hasNgayCap) {
-            document.getElementById('ngayCapCCCD').value = data.ngayCap;
-            document.getElementById('ngayCapBadge').classList.add('hidden');
-            document.getElementById('ngayCapCCCD').classList.remove('border-red-500', 'bg-red-50');
+            ncInp.placeholder = '••/••/•••• (Đã có trong hệ thống - Để trống nếu không đổi)';
+            ncInp.removeAttribute('required');
+            ncBadge.className = 'text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200 ml-1';
+            ncBadge.innerHTML = '<i class="fa-solid fa-check"></i> Đã có dữ liệu';
+            ncBadge.classList.remove('hidden');
+            ncInp.classList.remove('border-red-500', 'bg-red-50');
           } else {
-            document.getElementById('ngayCapCCCD').value = '';
-            document.getElementById('ngayCapBadge').classList.remove('hidden');
-            document.getElementById('ngayCapCCCD').classList.add('border-red-500', 'bg-red-50');
+            ncInp.placeholder = 'dd/mm/yyyy';
+            ncInp.setAttribute('required', '');
+            ncBadge.className = 'text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-200 ml-1';
+            ncBadge.innerText = 'Đang thiếu';
+            ncBadge.classList.remove('hidden');
+            ncInp.classList.add('border-red-500', 'bg-red-50');
           }
 
           // - Địa chỉ thường trú
+          const dcInp = document.getElementById('diaChi');
+          const dcBadge = document.getElementById('diaChiBadge');
+          dcInp.value = ''; // Để trống bảo mật
           if (data.hasDiaChi) {
-            document.getElementById('diaChi').value = data.diaChi;
-            document.getElementById('diaChiBadge').classList.add('hidden');
-            document.getElementById('diaChi').classList.remove('border-red-500', 'bg-red-50');
+            dcInp.placeholder = '•••••••••••• (Đã có trong hệ thống - Để trống nếu không đổi)';
+            dcInp.removeAttribute('required');
+            dcBadge.className = 'text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200 ml-1';
+            dcBadge.innerHTML = '<i class="fa-solid fa-check"></i> Đã có dữ liệu';
+            dcBadge.classList.remove('hidden');
+            dcInp.classList.remove('border-red-500', 'bg-red-50');
           } else {
-            document.getElementById('diaChi').value = '';
-            document.getElementById('diaChiBadge').classList.remove('hidden');
-            document.getElementById('diaChi').classList.add('border-red-500', 'bg-red-50');
+            dcInp.placeholder = 'Xã/Phường, Quận/Huyện, Tỉnh/TP';
+            dcInp.setAttribute('required', '');
+            dcBadge.className = 'text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded border border-red-200 ml-1';
+            dcBadge.innerText = 'Đang thiếu';
+            dcBadge.classList.remove('hidden');
+            dcInp.classList.add('border-red-500', 'bg-red-50');
           }
 
-          // 3. Xử lý Cột L (Ảnh CCCD 2 mặt)
+          // 4. Trạng thái ảnh CCCD
           const pdfBadge = document.getElementById('pdfStatusBadge');
           if (data.hasPdf) {
             serverHasPdf = true;
@@ -917,51 +955,40 @@
             pdfBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Chưa có ảnh CCCD (Bắt buộc chụp/tải)';
           }
 
-          // 4. Popup thông báo tình trạng hồ sơ từ sheet Data
+          // 5. Thông báo tình trạng hồ sơ
           const missing = data.missingList || [];
           if (missing.length > 0) {
             Swal.fire({
               icon: 'warning',
               title: `Hồ sơ: ${data.hoTen} (${data.maSo})`,
               html: `
-                <div class="text-left text-sm space-y-2.5 text-slate-700">
-                  <p>Hệ thống đã nhận diện mã số từ <strong>sheet Data</strong>.</p>
-                  
-                  ${!data.hasGioiTinh ? `
-                    <div class="p-2.5 bg-red-50 border border-red-300 rounded-lg text-red-700 text-xs font-semibold flex items-center gap-2">
-                      <i class="fa-solid fa-triangle-exclamation text-base"></i>
-                      <span>Cột O (Giới tính) chưa có dữ liệu - Vui lòng tích chọn Nam hoặc Nữ!</span>
-                    </div>
-                  ` : `
-                    <div class="p-2 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-800 text-xs font-medium flex items-center gap-2">
-                      <i class="fa-solid fa-circle-check text-base text-emerald-600"></i>
-                      <span>Giới tính đã có trong sheet Data: <b>${data.gioiTinh}</b></span>
-                    </div>
-                  `}
-
-                  <div class="p-3 bg-amber-50 border border-amber-300 rounded-lg text-amber-800 text-xs">
-                    <p class="font-bold mb-1"><i class="fa-solid fa-circle-exclamation"></i> Danh sách các mục đang thiếu cần bổ sung:</p>
+                <div class="text-left text-sm space-y-2 text-slate-700">
+                  <p>Hệ thống đã nhận diện mã số. Vì lý do bảo mật, các thông tin CCCD đã lưu sẽ được ẩn.</p>
+                  <div class="p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-xs">
+                    <p class="font-bold flex items-center gap-1.5 mb-1 text-red-800">
+                      <i class="fa-solid fa-triangle-exclamation"></i> Hồ sơ của bạn đang THIẾU các mục sau:
+                    </p>
                     <ul class="list-disc list-inside space-y-1 font-semibold text-red-700">
                       ${missing.map(m => `<li>${m}</li>`).join('')}
                     </ul>
                   </div>
-                  <p class="text-xs text-slate-500 italic">* Các mục thiếu đã được viền đỏ, vui lòng hoàn tất để gửi dữ liệu vào sheet Data.</p>
+                  <p class="text-xs text-slate-500 italic">* Các mục đang thiếu đã được viền đỏ, vui lòng hoàn tất trước khi bấm lưu.</p>
                 </div>
               `,
               confirmButtonText: 'Bổ sung ngay',
               confirmButtonColor: '#2563eb'
             });
-          }
-           else {
+          } else {
             Swal.fire({
               icon: 'success',
               title: `Hồ sơ: ${data.hoTen} (${data.maSo})`,
-              text: 'Hồ sơ của bạn đã có đầy đủ thông tin và ảnh CCCD!',
+              text: 'Hồ sơ của bạn đã có đầy đủ thông tin và ảnh CCCD. Bạn có thể để trống các ô đã có để giữ nguyên, hoặc nhập nội dung mới nếu muốn thay đổi!',
               confirmButtonColor: '#2563eb'
             });
           }
 
         } else {
+          currentServerData = null;
           phoneStatus.innerHTML = `<span class="text-amber-600"><i class="fa-solid fa-info-circle"></i> SĐT mới (chưa có trong Data) - vui lòng nhập mới toàn bộ.</span>`;
           serverHasPdf = false;
         }
@@ -1327,11 +1354,50 @@
         return;
       }
 
-      // 3. Kiểm tra Số CCCD (đúng 12 chữ số)
-      const cccd = trimTrailingSpaces(document.getElementById('soCCCD').value).replace(/\D/g, '');
-      if (cccd.length !== 12) {
-        Swal.fire('Sai Số CCCD', 'Số Căn cước công dân bắt buộc phải gồm đúng 12 chữ số!', 'warning');
-        document.getElementById('soCCCD').focus();
+      // 3. Kiểm tra các trường nhạy cảm: cho phép để trống nếu hệ thống đã có, bắt buộc nhập nếu chưa có
+      const rawCccd = trimTrailingSpaces(document.getElementById('soCCCD').value);
+      const cccd = rawCccd.replace(/\D/g, '');
+      if (rawCccd) {
+        if (cccd.length !== 12) {
+          Swal.fire('Sai Số CCCD', 'Số Căn cước công dân bắt buộc phải gồm đúng 12 chữ số!', 'warning');
+          document.getElementById('soCCCD').focus();
+          return;
+        }
+      } else {
+        if (!currentServerData || !currentServerData.hasCCCD) {
+          Swal.fire('Thiếu Số CCCD', 'Hồ sơ chưa có Số CCCD. Vui lòng nhập đúng 12 chữ số!', 'warning');
+          document.getElementById('soCCCD').focus();
+          return;
+        }
+      }
+
+      const ngaySinhVal = trimTrailingSpaces(document.getElementById('ngaySinh').value);
+      if (ngaySinhVal) {
+        const parts = ngaySinhVal.split('/');
+        if (parts.length !== 3 || parts[2].length !== 4) {
+          Swal.fire('Sai Ngày sinh', 'Vui lòng nhập đúng định dạng ngày tháng năm sinh (dd/mm/yyyy)!', 'warning');
+          document.getElementById('ngaySinh').focus();
+          return;
+        }
+      } else {
+        if (!currentServerData || !currentServerData.hasValidBirthdate) {
+          Swal.fire('Thiếu Ngày sinh', 'Hồ sơ chưa có ngày tháng năm sinh đầy đủ. Vui lòng nhập định dạng dd/mm/yyyy!', 'warning');
+          document.getElementById('ngaySinh').focus();
+          return;
+        }
+      }
+
+      const ngayCapVal = trimTrailingSpaces(document.getElementById('ngayCapCCCD').value);
+      if (!ngayCapVal && (!currentServerData || !currentServerData.hasNgayCap)) {
+        Swal.fire('Thiếu Ngày cấp CCCD', 'Hồ sơ chưa có Ngày cấp CCCD. Vui lòng nhập bổ sung!', 'warning');
+        document.getElementById('ngayCapCCCD').focus();
+        return;
+      }
+
+      const diaChiVal = trimTrailingSpaces(document.getElementById('diaChi').value);
+      if (!diaChiVal && (!currentServerData || !currentServerData.hasDiaChi)) {
+        Swal.fire('Thiếu Địa chỉ thường trú', 'Hồ sơ chưa có Địa chỉ thường trú. Vui lòng nhập bổ sung!', 'warning');
+        document.getElementById('diaChi').focus();
         return;
       }
 
@@ -1431,10 +1497,10 @@
           hoTen: trimTrailingSpaces(document.getElementById('hoTen').value),
           gioiTinh: gioiTinhVal,
           soDienThoai: phone,
-          ngaySinh: document.getElementById('ngaySinh').value,
+          ngaySinh: ngaySinhVal,
           soCCCD: cccd,
-          ngayCapCCCD: document.getElementById('ngayCapCCCD').value,
-          diaChi: trimTrailingSpaces(document.getElementById('diaChi').value),
+          ngayCapCCCD: ngayCapVal,
+          diaChi: diaChiVal,
           viTri: finalRole,
           phuongTien: phuongTienVal,
           noiO: noiOVal,
