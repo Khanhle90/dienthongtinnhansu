@@ -30,8 +30,8 @@
           <img src="logo.png" alt="Logo ABA" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white shadow-md flex-shrink-0 object-contain">
           
           <div class="min-w-0">
-            <h1 class="text-base sm:text-xl md:text-2xl font-bold uppercase tracking-wider truncate sm:whitespace-normal">TRUNG TÂM ABA</h1>
-            <p class="text-[11px] sm:text-xs md:text-sm text-blue-200 mt-0.5 truncate sm:whitespace-normal">Thông tin thanh toán nhân sự</p>
+            <h1 class="text-base sm:text-xl md:text-2xl font-bold uppercase tracking-wider truncate sm:whitespace-normal">Thông Tin Thanh Toán Nhân Sự</h1>
+            <p class="text-[11px] sm:text-xs md:text-sm text-blue-200 mt-0.5 truncate sm:whitespace-normal">Cập nhật hồ sơ, CCCD 2 mặt và quyết toán thù lao</p>
           </div>
         </div>
         <button type="button" onclick="openLookupModal()" class="bg-blue-600/60 hover:bg-blue-500 border border-blue-300 text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm flex-shrink-0">
@@ -398,7 +398,7 @@
 
     <!-- Khung Camera & Khung nét đứt đứng (khi cầm ngang máy thì biến thành khung ngang bao trọn) -->
     <div class="relative flex-1 flex items-center justify-center overflow-hidden my-2 bg-black">
-      <video id="cameraVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+      <video id="cameraVideo" autoplay playsinline webkit-playsinline muted class="w-full h-full object-cover"></video>
 
       <!-- Khung nét đứt gợi ý: tỷ lệ đứng 54/85.6, cao 68vh -->
       <div class="absolute h-[68vh] max-h-[540px] max-w-[85vw] aspect-[54/85.6] rounded-xl landscape-guide-box pointer-events-none flex flex-col justify-between p-3 text-white z-10">
@@ -1175,6 +1175,7 @@
           cameraStream.getTracks().forEach(t => t.stop());
           cameraStream = null;
         }
+
         cameraStream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: currentFacingMode,
@@ -1183,11 +1184,21 @@
           },
           audio: false
         });
+
         const video = document.getElementById('cameraVideo');
-        video.srcObject = cameraStream;
+        
+        // 1. Ép thuộc tính Boolean trực tiếp vào DOM (Bắt buộc đối với iOS WebKit)
+        video.muted = true;
+        video.playsInline = true;
         video.setAttribute('playsinline', '');
-        video.setAttribute('muted', '');
+        video.setAttribute('webkit-playsinline', '');
+        
+        // 2. Gán luồng camera
+        video.srcObject = cameraStream;
+
+        // 3. Gọi phát trực tiếp (KHÔNG dùng onloadedmetadata để tránh bị treo trên iPhone)
         video.play().catch(e => console.log("Lỗi play camera:", e));
+
       } catch (err) {
         Swal.fire('Lỗi máy ảnh', 'Không thể khởi động camera. Vui lòng cấp quyền truy cập máy ảnh!', 'error');
         closeCameraModal();
