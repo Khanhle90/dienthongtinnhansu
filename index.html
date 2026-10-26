@@ -298,7 +298,7 @@
               
               <!-- Ảnh minh họa thực tế -->
               <div class="rounded-lg overflow-hidden border border-amber-200 bg-white p-1 shadow-sm">
-                <img src="huong_dan_stk.png" alt="Minh họa lấy số tài khoản gốc" class="w-full object-contain rounded cursor-pointer hover:opacity-95 transition" onclick="window.open(this.src, '_blank')">
+                <img src="huong_dan_stk.png" alt="Minh họa lấy số tài khoản gốc" class="w-full object-contain rounded cursor-pointer hover:opacity-95 transition" onclick="openGuideImage(this.src)">
               </div>
               <p class="text-[10px] text-slate-500 italic text-center">* Nhấp vào ảnh để xem kích thước lớn hơn</p>
             </div>
@@ -791,6 +791,23 @@
     // Kích hoạt cho cả Ngày sinh và Ngày cấp CCCD
     setupDateInputMask('#ngaySinh, #ngayCapCCCD');
 
+    // HÀM XEM ẢNH HƯỚNG DẪN STK: CÓ ĐẦY ĐỦ NÚT "X" VÀ NÚT "ĐÓNG" ĐỂ THOÁT
+    function openGuideImage(src) {
+      Swal.fire({
+        imageUrl: src || 'huong_dan_stk.png',
+        imageAlt: 'Hướng dẫn kiểm tra số tài khoản gốc',
+        showCloseButton: true,
+        showConfirmButton: true,
+        confirmButtonText: '<i class="fa-solid fa-xmark"></i> Đóng',
+        confirmButtonColor: '#2563eb',
+        width: '95%',
+        padding: '12px',
+        background: '#ffffff',
+        customClass: {
+          image: 'max-h-[75vh] object-contain rounded-lg my-1'
+        }
+      });
+    }
     let currentSide = 'front';
     let frontCroppedDataUrl = null;
     let backCroppedDataUrl = null;
